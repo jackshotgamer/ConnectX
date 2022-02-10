@@ -14,6 +14,7 @@ class GameView(Event_Base.EventBase):
     def __init__(self, slot_width, slot_height, win_length, name, colour, socket: s.socket):
         super().__init__()
         arcade.set_background_color((23, 93, 150))
+        self.turn = 'None'
         self.slot_width = abs(slot_width)
         self.slot_height = abs(slot_height)
         self.win_length = abs(win_length)
@@ -30,6 +31,7 @@ class GameView(Event_Base.EventBase):
                                         arcade.color.DARK_BLUE, 50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
         self.winner_text2 = arcade.Text(f'{self.winner.upper()}!', State.state.screen_center.x, State.state.screen_center.y, arcade.color.DARK_BLUE,
                                         50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
+        self.turn_text = arcade.Text(f'{self.turn.upper()}\'s turn!', State.state.screen_center.x, State.state.window.height - 60, self.convert_colour_to_rgb(self.turn), 24, anchor_x='center', anchor_y='center')
         State.state.set_cell_size(self.slot_width, self.slot_height)
         self.wcenter = int((self.slot_width - 1) / 2)
         self.hcenter = int((self.slot_height - 1) / 2)
@@ -135,6 +137,7 @@ class GameView(Event_Base.EventBase):
         arcade.draw_point((State.state.cell_render_size.x + self.w_offset) + State.state.screen_center.x,
                           (State.state.cell_render_size.y + self.h_offset) + State.state.screen_center.y,
                           arcade.color.GOLD, 10)
+        self.turn_text.draw()
         if self.winner:
             arcade.draw_circle_filled(State.state.screen_center.x, State.state.screen_center.y + (State.state.screen_center.y * 0.1), 200, (50, 120, 255))
             self.winner_text1.draw()
@@ -172,6 +175,8 @@ class GameView(Event_Base.EventBase):
                     alert = json.loads(alert1)
                     if alert['type'] == 'drop_confirm':
                         self.slots[tuple(alert['coords'])] = alert['drop_team']
+                        self.turn = alert['turn']
+                        self.turn_text.value = f'{self.turn.upper()}\'s turn!'
                         if not self.winner:
                             self.winner = alert['winner']
                             if self.winner:
@@ -180,12 +185,10 @@ class GameView(Event_Base.EventBase):
                                 self.winner_text2.value = f'{self.winner.upper()}!'
             self.elapsed_delta = 0
         hovered = (self.hovered_lane())
-        self.username_text.x = State.state.screen_center.x
-        self.username_text.y = State.state.window.height - 20
-        self.winner_text1.x = State.state.screen_center.x
-        self.winner_text1.y = State.state.screen_center.y + (max(State.state.cell_render_size.x, State.state.cell_render_size.y))
-        self.winner_text2.x = State.state.screen_center.x
-        self.winner_text2.y = State.state.screen_center.y
+        self.username_text.x, self.username_text.y = State.state.screen_center.x, State.state.window.height - 20
+        self.winner_text1.x, self.winner_text1.y = State.state.screen_center.x, State.state.screen_center.y + (max(State.state.cell_render_size.x, State.state.cell_render_size.y))
+        self.winner_text2.x, self.winner_text2.y = State.state.screen_center.x, State.state.screen_center.y
+        self.turn_text.x, self.turn_text.y = State.state.screen_center.x, State.state.window.height - 60
         hovered_colours = [(x, y) for (x, y), team in self.slots.items() if x == hovered.x and team == neutral_colour]
         if hovered_colours:
             self.drop_pos = min(hovered_colours, key=lambda arg: arg[1])

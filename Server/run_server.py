@@ -100,12 +100,8 @@ class ClientThread(threading.Thread):
                 self.slots[(drop_pos[0], drop_pos[1])] = current_team
                 from Win_Checker import win_check
                 winner = win_check(self.slots, drop_pos[0], drop_pos[1], self.win_length)
-                for client in self.sockets:
-                    socket_util.send_str(client, json.dumps({'type': 'drop_confirm', 'coords': drop_pos, 'drop_team': current_team, 'winner': winner}))
                 turn = False
                 done_once = False
-                print(self.current_turn)
-
                 for c in self.turn_order:
                     if turn:
                         self.turn_order.remove(self.current_turn)
@@ -115,6 +111,8 @@ class ClientThread(threading.Thread):
                         done_once = True
                     if self.current_turn == c and not done_once:
                         turn = True
+                for client in self.sockets:
+                    socket_util.send_str(client, json.dumps({'type': 'drop_confirm', 'coords': drop_pos, 'drop_team': current_team, 'winner': winner, 'turn': self.current_turn}))
 
     @_command('join')
     def cmd_join(self, data, socket_: s.socket, args):
