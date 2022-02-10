@@ -70,6 +70,9 @@ class ClientThread(threading.Thread):
         self.hcenter = int((self.slot_height - 1) / 2)
         weven = True if not self.slot_width % 2 else False
         heven = True if not self.slot_height % 2 else False
+        self.current_turn = None
+        self.first_join = False
+        self.turn_order = []
         self.slots = {
             (self.wcenter - num1, self.hcenter - num2): neutral_colour
             for num1 in range(- (1 if weven else 0), self.slot_width - (1 if weven else 0))
@@ -93,19 +96,41 @@ class ClientThread(threading.Thread):
         if tuple(args[0]) in self.slots:
             drop_pos = args[0]
             current_team = args[1]
-            self.slots[(drop_pos[0], drop_pos[1])] = current_team
-            from Win_Checker import win_check
-            winner = win_check(self.slots, drop_pos[0], drop_pos[1], self.win_length)
-            for client in self.sockets:
-                socket_util.send_str(client, json.dumps({'type': 'drop_confirm', 'coords': drop_pos, 'drop_team': current_team, 'winner': winner}))
+            if current_team == self.current_turn:
+                self.slots[(drop_pos[0], drop_pos[1])] = current_team
+                from Win_Checker import win_check
+                winner = win_check(self.slots, drop_pos[0], drop_pos[1], self.win_length)
+                for client in self.sockets:
+                    socket_util.send_str(client, json.dumps({'type': 'drop_confirm', 'coords': drop_pos, 'drop_team': current_team, 'winner': winner}))
+                turn = False
+                done_once = False
+                print(self.current_turn)
+
+                for c in self.turn_order:
+                    if turn:
+                        self.turn_order.remove(self.current_turn)
+                        self.turn_order.append(self.current_turn)
+                        self.current_turn = c
+                        turn = False
+                        done_once = True
+                    if self.current_turn == c and not done_once:
+                        turn = True
 
     @_command('join')
     def cmd_join(self, data, socket_: s.socket, args):
         import json
         colour = args[1]
+        if not self.first_join:
+            self.current_turn = colour
+            self.first_join = True
+        self.turn_order.append(colour)
         self.slot_width, self.slot_height = args[2]
         self.win_length = args[3]
-
+        """
+        current:red
+        
+        [client:red client:orange] <- 0, 1, 0, 1
+        """
         for client in self.game_clients:
             if client.colour == colour:
                 error = {
