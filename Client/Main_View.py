@@ -136,7 +136,6 @@ class MainMenu(Event_Base.EventBase):
         }
         socket_util.send_str(self.socket, json.dumps(string))
         read = json.loads(socket_util.read_str(self.socket).strip('|||'))
-        print(read)
         if read.get('error') == 'DupeCol':
             if len(read.get('invalidCol', [])) >= 8:
                 success = False
@@ -147,7 +146,6 @@ class MainMenu(Event_Base.EventBase):
                     self.button_manager.disable(colour)
                     self.disabled_buttons.append(colour)
                     success = False
-        print(read)
         return success
 
     @staticmethod

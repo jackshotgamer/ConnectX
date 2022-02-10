@@ -167,11 +167,9 @@ class GameView(Event_Base.EventBase):
             if socket_alerts := socket_util.get_readable_sockets([self.socket]):
                 import json
                 raw = socket_util.read_str(socket_alerts[0])
-                print(raw)
                 for alert1 in raw.split('|||'):
                     if not alert1.strip():
                         continue
-                    print(alert1)
                     alert = json.loads(alert1)
                     if alert['type'] == 'drop_confirm':
                         self.slots[tuple(alert['coords'])] = alert['drop_team']
@@ -183,6 +181,9 @@ class GameView(Event_Base.EventBase):
                                 self.winner_text2.color = self.convert_colour_to_rgb(self.winner)
                                 self.winner_text1.color = self.convert_colour_to_rgb(self.winner)
                                 self.winner_text2.value = f'{self.winner.upper()}!'
+                    if alert['type'] == 'set_turn':
+                        self.turn = alert['turn']
+                        self.turn_text.value = f'{self.turn.upper()}\'s turn!'
             self.elapsed_delta = 0
         hovered = (self.hovered_lane())
         self.username_text.x, self.username_text.y = State.state.screen_center.x, State.state.window.height - 20

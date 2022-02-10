@@ -140,6 +140,7 @@ class ClientThread(threading.Thread):
         self.game_client_from_socket(socket_).colour = colour
         print(args)
         socket_util.send_str(socket_, json.dumps(data))
+        socket_util.send_str(socket_, json.dumps({'type': 'set_turn', 'turn': self.current_turn}))
 
     def game_client_from_socket(self, socket_: s.socket) -> Optional[GameClient]:
         for client in self.game_clients:
