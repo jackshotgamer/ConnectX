@@ -203,14 +203,18 @@ class GameView(Event_Base.EventBase):
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
         if button == 1:
-            if self.drop_pos:
-                import json
-                string = {
-                    'type': 'command',
-                    'command': 'drop',
-                    'args': [(self.drop_pos[0], self.drop_pos[1]), f'{self.current_team}'],
-                }
-                socket_util.send_str(self.socket, json.dumps(string))
+            if not self.winner:
+                if self.drop_pos:
+                    import json
+                    string = {
+                        'type': 'command',
+                        'command': 'drop',
+                        'args': [(self.drop_pos[0], self.drop_pos[1]), f'{self.current_team}'],
+                    }
+                    socket_util.send_str(self.socket, json.dumps(string))
+            else:
+                from Client import Main_View
+                State.state.window.show_view(Main_View.MainMenu(self.slot_width, self.slot_height, self.win_length))
 
     def on_key_release(self, _symbol: int, _modifiers: int):
         if _symbol == arcade.key.ESCAPE:

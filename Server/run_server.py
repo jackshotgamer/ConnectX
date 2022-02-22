@@ -15,14 +15,6 @@ ERROR_missing_obj = 2
 ERROR_invalid_obj = 3
 ERROR_invalid_json = 4
 
-"""
-. . . . .
-. . - Y .
-. . Y R .
-. Y Y R .
-# Y R R R
-"""
-
 
 def _command(name='', func=None):
     import functools
@@ -55,6 +47,32 @@ WIN <-------┛     |       |
 CHANGE TURN <-----┛       |
         ┗-----------------┛
 """
+
+
+class ManagerThread(threading.Thread):
+    def __init__(self):
+        super().__init__()
+        self.rooms: dict[str, 'ClientThread'] = {}
+
+    def get_or_create_room(self, room_id):
+        return self.rooms[room_id] if room_id in self.rooms else self.create_room(room_id)
+
+    def create_room(self, room_id):
+        client = ClientThread()
+        self.rooms[room_id] = client
+        client.start()
+        return client
+
+    def run(self):
+        import time
+        while True:
+            time.sleep(0.1)
+            rooms = tuple(self.rooms.items())
+            for key, value in rooms:
+                if value.game_over:
+                    del self.rooms[key]
+
+
 neutral_colour = 'gray'
 
 
@@ -62,7 +80,6 @@ class ClientThread(threading.Thread):
     def __init__(self):
         super().__init__()
         self.game_clients: Deque[GameClient] = collections.deque()
-        self.running = False
         self.slot_width = 7
         self.slot_height = 6
         self.win_length = 4
@@ -79,6 +96,7 @@ class ClientThread(threading.Thread):
             for num2 in range(- (1 if heven else 0), self.slot_height - (1 if heven else 0))
         }
         self._commands = {}
+        self.game_over = False
         import inspect
         for item in self.__class__.__dict__.values():
             if inspect.isfunction(item):
@@ -113,6 +131,15 @@ class ClientThread(threading.Thread):
                         turn = True
                 for client in self.sockets:
                     socket_util.send_str(client, json.dumps({'type': 'drop_confirm', 'coords': drop_pos, 'drop_team': current_team, 'winner': winner, 'turn': self.current_turn}))
+                if winner:
+                    for client in self.sockets:
+                        socket_util.send_str(client, json.dumps({'type': 'dc'}))
+                    for client in self.sockets:
+                        try:
+                            client.close()
+                        except Exception as e:
+                            print(e)
+                    self.game_over = True
 
     @_command('join')
     def cmd_join(self, data, socket_: s.socket, args):
@@ -149,9 +176,8 @@ class ClientThread(threading.Thread):
         return None
 
     def run(self):
-        self.running = True
         import json
-        while self.running:
+        while not self.game_over:
             if self.sockets:
                 # for connection_ in socket_util.get_writeable_sockets(self.sockets):
                 #     socket_util.send(connection_, (b"This connection is sponsored by NordVPN. "
@@ -174,6 +200,7 @@ class ClientThread(threading.Thread):
                         connection_.close()
                         self.game_clients.remove(self.game_client_from_socket(connection_))
             time.sleep(0.0001)
+        print('closed for business!')
 
     def handle_command(self, data, socket_):
         print(data)
@@ -206,8 +233,13 @@ class ClientThread(threading.Thread):
                 pass
 
 
-thread = ClientThread()
-thread.start()
+room_mngr = ManagerThread()
+room_mngr.start()
 while True:
     connection, address = socket.accept()
-    thread.add_client(connection)
+    import json
+    raw = socket_util.read_str(connection).strip('|')
+    print(raw)
+    packet = json.loads(raw)
+    room_id = packet['room_id']
+    room_mngr.get_or_create_room(room_id).add_client(connection)

@@ -31,6 +31,7 @@ class EventBase(arcade.View):
         global held_modifiers
         symbols.append(symbol)
         held_modifiers |= modifiers
+        self.button_manager.on_key_press(symbol, modifiers)
 
     def on_key_release(self, _symbol: int, _modifiers: int):
         global symbols
