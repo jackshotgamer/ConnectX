@@ -21,6 +21,9 @@ class EventBase(arcade.View):
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
         self.button_manager.on_click_release()
 
+    def update(self, delta_time: float):
+        self.button_manager.update_elements()
+
     def on_draw(self):
         arcade.start_render()
         super().on_draw()

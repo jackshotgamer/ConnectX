@@ -38,39 +38,42 @@ class MainMenu(Event_Base.EventBase):
         # self.username.text_adapter = LimitText()
         from functools import partial
         # self.ui_manager.add(self.username)
-        self.button_manager.append_button('Enter', 'Enter', Vector.Vector(State.state.screen_center.x, State.state.screen_center.y), Vector.Vector(250, 50), on_click=self.enter_button)
-        self.button_manager.append_button('Quit', 'Quit', Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 50), Vector.Vector(100, 50), on_click=self.exit_button)
-        self.button_manager.append_input('username', 'Username: ', Vector.Vector(450, 450+50), Vector.Vector(300, 50), text_colour=(255, 215, 0), text_length=13)
-        self.button_manager.append_input('room_id', 'Room Name: ', Vector.Vector(450, 450+101), Vector.Vector(190, 50), text_colour=(215, 215, 215), text_length=6)
-        center = Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 250)
+        self.button_manager.append_button('Enter', 'Enter', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y), Vector.Vector(250, 50), on_click=self.enter_button)
+        self.button_manager.append_button('Quit', 'Quit', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 50), Vector.Vector(100, 50), on_click=self.exit_button)
+        self.button_manager.append_input('username', 'Username: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+50), Vector.Vector(300, 50),
+                                         text_colour=(255, 215, 0), text_length=13)
+        self.button_manager.append_input('room_id', 'Room Name: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+101), Vector.Vector(190, 50),
+                                         text_colour=(215, 215, 215), text_length=6)
+
+        center = lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 250)
         self.center = center
         self.no_colour = False
         self.no_name = False
-        self.button_manager.append_button('red', 'Red', Vector.Vector(center.x, center.y + 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'red'), idle_texture=Sprites_.red_disc,
+        self.button_manager.append_button('red', 'Red', lambda: Vector.Vector(center().x, center().y + 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'red'), idle_texture=Sprites_.red_disc,
                                           hover_texture=Sprites_.red_disc, click_texture=Sprites_.red_disc, text_size=16, text_colour=(0, 0, 0), hover_text_colour=(100, 100, 100),
                                           click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('yellow', 'Yellow', Vector.Vector(center.x, center.y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'yellow'),
+        self.button_manager.append_button('yellow', 'Yellow', lambda: Vector.Vector(center().x, center().y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'yellow'),
                                           idle_texture=Sprites_.yellow_disc,
                                           hover_texture=Sprites_.yellow_disc, click_texture=Sprites_.yellow_disc, text_size=16, text_colour=(0, 0, 0), hover_text_colour=(100, 100, 100),
                                           click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('green', 'Green', Vector.Vector(center.x + 100, center.y), Vector.Vector(100, 100), on_click=partial(self.colour, 'green'), idle_texture=Sprites_.green_disc,
+        self.button_manager.append_button('green', 'Green', lambda: Vector.Vector(center().x + 100, center().y), Vector.Vector(100, 100), on_click=partial(self.colour, 'green'), idle_texture=Sprites_.green_disc,
                                           hover_texture=Sprites_.green_disc, click_texture=Sprites_.green_disc, text_size=16, text_colour=(0, 0, 0), hover_text_colour=(100, 100, 100),
                                           click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('blue', 'Blue', Vector.Vector(center.x - 100, center.y), Vector.Vector(100, 100), on_click=partial(self.colour, 'blue'), idle_texture=Sprites_.blue_disc,
+        self.button_manager.append_button('blue', 'Blue', lambda: Vector.Vector(center().x - 100, center().y), Vector.Vector(100, 100), on_click=partial(self.colour, 'blue'), idle_texture=Sprites_.blue_disc,
                                           hover_texture=Sprites_.blue_disc, click_texture=Sprites_.blue_disc, text_size=16, text_colour=(0, 0, 0), hover_text_colour=(100, 100, 100),
                                           click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('pink', 'Pink', Vector.Vector(center.x + 100, center.y + 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'pink'),
+        self.button_manager.append_button('pink', 'Pink', lambda: Vector.Vector(center().x + 100, center().y + 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'pink'),
                                           idle_texture=Sprites_.pink_disc,
                                           hover_texture=Sprites_.pink_disc, click_texture=Sprites_.pink_disc, text_size=16, text_colour=(0, 0, 0), hover_text_colour=(100, 100, 100),
                                           click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('lime', 'Lime', Vector.Vector(center.x - 100, center.y + 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'lime'),
+        self.button_manager.append_button('lime', 'Lime', lambda: Vector.Vector(center().x - 100, center().y + 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'lime'),
                                           idle_texture=Sprites_.lime_disc,
                                           hover_texture=Sprites_.lime_disc, click_texture=Sprites_.lime_disc, text_size=16, text_colour=(0, 0, 0), hover_text_colour=(100, 100, 100),
                                           click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('orange', 'Orange', Vector.Vector(center.x + 100, center.y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'orange'),
+        self.button_manager.append_button('orange', 'Orange', lambda: Vector.Vector(center().x + 100, center().y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'orange'),
                                           idle_texture=Sprites_.orange_disc, hover_texture=Sprites_.orange_disc, click_texture=Sprites_.orange_disc, text_size=16, text_colour=(0, 0, 0),
                                           hover_text_colour=(100, 100, 100), click_text_colour=(200, 200, 200))
-        self.button_manager.append_button('purple', 'Purple', Vector.Vector(center.x - 100, center.y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'purple'),
+        self.button_manager.append_button('purple', 'Purple', lambda: Vector.Vector(center().x - 100, center().y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'purple'),
                                           idle_texture=Sprites_.purple_disc, hover_texture=Sprites_.purple_disc, click_texture=Sprites_.purple_disc, text_size=16, text_colour=(0, 0, 0),
                                           hover_text_colour=(100, 100, 100), click_text_colour=(200, 200, 200))
         self.current_colour = 'None'
@@ -83,8 +86,8 @@ class MainMenu(Event_Base.EventBase):
     def on_draw(self):
         super().on_draw()
         # arcade.draw_rectangle_filled(450, 450 + 50, 250, 50, (0, 0, 0))
-        arcade.draw_texture_rectangle(self.center.x, self.center.y, 100, 100, self.preview_texture)
-        arcade.draw_text(f'Selected:\n{self.current_colour.upper()}', self.center.x, self.center.y, (0, 0, 0), 11, 100, align='center', bold=True, anchor_x='center', anchor_y='center', multiline=True)
+        arcade.draw_texture_rectangle(self.center().x, self.center().y, 100, 100, self.preview_texture)
+        arcade.draw_text(f'Selected:\n{self.current_colour.upper()}', self.center().x, self.center().y, (0, 0, 0), 11, 100, align='center', bold=True, anchor_x='center', anchor_y='center', multiline=True)
         if self.full_lobby:
             arcade.draw_text('Game is full, please join another.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()

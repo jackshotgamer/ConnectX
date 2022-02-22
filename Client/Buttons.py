@@ -23,12 +23,20 @@ class Button:
         self.text_size = text_size
         self.enabled = enabled
 
+    def get_actual_pos(self):
+        if callable(self.center):
+            return self.center()
+        return self.center
+    
+    def update(self):
+        pass
+
 
 class TextInput:
     def __init__(self, id_, prompt, center, size, idle_texture, hover_texture, alpha, on_click, text_colour, disabled_texture, text_size, text, enabled, text_length):
         self.id_ = id_
-        self.prompt = arcade.Text(prompt, center.x, center.y, text_colour, text_size, size.x, anchor_x='center', anchor_y='center')
         self.center = center
+        self.prompt = arcade.Text(prompt, self.get_actual_pos().x, self.get_actual_pos().y, text_colour, text_size, size.x, anchor_x='center', anchor_y='center')
         self.size = size
         self.idle_texture = idle_texture
         self.hover_texture = hover_texture
@@ -37,9 +45,18 @@ class TextInput:
         self.on_click = on_click
         self.text_colour = text_colour
         self.text_size = text_size
-        self.text = arcade.Text(text, center.x, center.y, text_colour, text_size, size.x, font_name='Fonts/JetBrainsMono.ttf', anchor_x='center', anchor_y='center')
+        self.text = arcade.Text(text, self.get_actual_pos().x, self.get_actual_pos().y, text_colour, text_size, size.x, font_name='Fonts/JetBrainsMono.ttf', anchor_x='center', anchor_y='center')
         self.enabled = enabled
         self.text_length = text_length
+
+    def get_actual_pos(self):
+        if callable(self.center):
+            return self.center()
+        return self.center
+    
+    def update(self):
+        self.prompt.x, self.prompt.y = self.get_actual_pos().x, self.get_actual_pos().y
+        self.text.x, self.text.y = self.get_actual_pos().x, self.get_actual_pos().y
 
 
 class ButtonManager:
@@ -124,12 +141,12 @@ class ButtonManager:
                 if input_.enabled:
                     render_prompt = False
             arcade.draw_texture_rectangle(
-                input_.center.x, input_.center.y, input_.size.x, input_.size.y,
+                input_.get_actual_pos().x, input_.get_actual_pos().y, input_.size.x, input_.size.y,
                 texture, alpha=input_.alpha
             )
             input_.prompt.draw() if not input_.text.value and render_prompt else input_.text.draw()
             if not input_.enabled:
-                arcade.draw_texture_rectangle(input_.center.x, input_.center.y, input_.size.x * 0.8, input_.size.y * 0.8,
+                arcade.draw_texture_rectangle(input_.get_actual_pos().x, input_.get_actual_pos().y, input_.size.x * 0.8, input_.size.y * 0.8,
                                               input_.disabled_texture, alpha=input_.alpha)
 
     def _button_render(self):
@@ -148,15 +165,15 @@ class ButtonManager:
                     texture = button.idle_texture
                     text_colour = button.text_colour
             arcade.draw_texture_rectangle(
-                button.center.x, button.center.y, button.size.x, button.size.y,
+                button.get_actual_pos().x, button.get_actual_pos().y, button.size.x, button.size.y,
                 texture, alpha=button.alpha
             )
             arcade.draw_text(
-                button.text, button.center.x, button.center.y, text_colour, font_size=button.text_size,
+                button.text, button.get_actual_pos().x, button.get_actual_pos().y, text_colour, font_size=button.text_size,
                 width=button.size.x, font_name='arial', anchor_x='center', anchor_y='center', align='center'
             )
             if not button.enabled:
-                arcade.draw_texture_rectangle(button.center.x, button.center.y, button.size.x * 0.8, button.size.y * 0.8,
+                arcade.draw_texture_rectangle(button.get_actual_pos().x, button.get_actual_pos().y, button.size.x * 0.8, button.size.y * 0.8,
                                               button.disabled_texture, alpha=button.alpha)
 
     def remove(self, id_):
@@ -172,6 +189,12 @@ class ButtonManager:
         if id_ in self.buttons:
             if not self.buttons[id_].enabled:
                 self.buttons[id_].enabled = True
+
+    def update_elements(self):
+        for input_ in self.inputs.values():
+            input_.update()
+        for button_ in self.buttons.values():
+            button_.update()
 
     def clear_all(self, confirm):
         if confirm:
@@ -217,9 +240,9 @@ class ButtonManager:
             if not button.enabled:
                 continue
             if (
-                    mouse_x in range(int(button.center.x - (button.size.x / 2)), int((button.center.x + (button.size.x / 2)) + 1))
+                    mouse_x in range(int(button.get_actual_pos().x - (button.size.x / 2)), int((button.get_actual_pos().x + (button.size.x / 2)) + 1))
                     and
-                    mouse_y in range(int(button.center.y - (button.size.y / 2)), int((button.center.y + (button.size.y / 2)) + 1))
+                    mouse_y in range(int(button.get_actual_pos().y - (button.size.y / 2)), int((button.get_actual_pos().y + (button.size.y / 2)) + 1))
             ):
                 self.hover_buttons.add(button.id_)
             else:
@@ -228,9 +251,9 @@ class ButtonManager:
             if not input_.enabled:
                 continue
             if (
-                    mouse_x in range(int(input_.center.x - (input_.size.x / 2)), int((input_.center.x + (input_.size.x / 2)) + 1))
+                    mouse_x in range(int(input_.get_actual_pos().x - (input_.size.x / 2)), int((input_.get_actual_pos().x + (input_.size.x / 2)) + 1))
                     and
-                    mouse_y in range(int(input_.center.y - (input_.size.y / 2)), int((input_.center.y + (input_.size.y / 2)) + 1))
+                    mouse_y in range(int(input_.get_actual_pos().y - (input_.size.y / 2)), int((input_.get_actual_pos().y + (input_.size.y / 2)) + 1))
             ):
                 self.hover_inputs.add(input_.id_)
             else:
