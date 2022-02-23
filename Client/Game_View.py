@@ -25,13 +25,19 @@ class GameView(Event_Base.EventBase):
         self.socket = socket
         self.name = name
         self.winner = ''
+        self.show_win_screen = True
+        self.button_manager.append_button('mag_glass', '', lambda: Vector.Vector(State.state.screen_center.x - 250, State.state.window.height - 50), Vector.Vector(100, 100),
+                                          Sprites_.mag_glass_dark, Sprites_.mag_glass_dark, Sprites_.mag_glass_light, 200, self.toggle_mag_glass, visible=False)
+        self.button_manager.append_button('leave_button', 'Leave', lambda: Vector.Vector(State.state.screen_center.x + 250, State.state.window.height - 50), Vector.Vector(100, 100),
+                                          on_click=self.leave, visible=False)
         self.username_text = arcade.Text(f'Name: {self.name}', State.state.screen_center.x, State.state.window.height - 20, arcade.color.BLACK, 18, anchor_x='center', anchor_y='center',
                                          multiline=False)
         self.winner_text1 = arcade.Text(f'Winner:', State.state.screen_center.x, State.state.screen_center.y + (max(State.state.cell_render_size.x, State.state.cell_render_size.y)),
                                         arcade.color.DARK_BLUE, 50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
         self.winner_text2 = arcade.Text(f'{self.winner.upper()}!', State.state.screen_center.x, State.state.screen_center.y, arcade.color.DARK_BLUE,
                                         50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
-        self.turn_text = arcade.Text(f'{self.turn.upper()}\'s turn!', State.state.screen_center.x, State.state.window.height - 60, self.convert_colour_to_rgb(self.turn), 24, anchor_x='center', anchor_y='center')
+        self.turn_text = arcade.Text(f'{self.turn.upper()}\'s turn!', State.state.screen_center.x, State.state.window.height - 60, self.convert_colour_to_rgb(self.turn), 24, anchor_x='center',
+                                     anchor_y='center')
         State.state.set_cell_size(self.slot_width, self.slot_height)
         self.wcenter = int((self.slot_width - 1) / 2)
         self.hcenter = int((self.slot_height - 1) / 2)
@@ -45,6 +51,12 @@ class GameView(Event_Base.EventBase):
         self.current_team = colour
         self.drop_pos = None
         self.w_offset, self.h_offset = 0, 0
+
+    def toggle_mag_glass(self):
+        if self.show_win_screen:
+            self.show_win_screen = False
+        else:
+            self.show_win_screen = True
 
     def colour_at_coords(self, x, y):
         if (x, y) in self.slots:
@@ -138,10 +150,18 @@ class GameView(Event_Base.EventBase):
                           (State.state.cell_render_size.y + self.h_offset) + State.state.screen_center.y,
                           arcade.color.GOLD, 10)
         self.turn_text.draw()
-        if self.winner:
+        if self.winner and self.show_win_screen:
             arcade.draw_circle_filled(State.state.screen_center.x, State.state.screen_center.y + (State.state.screen_center.y * 0.1), 200, (50, 120, 255))
             self.winner_text1.draw()
             self.winner_text2.draw()
+        if self.winner:
+            self.button_manager.make_visible('mag_glass')
+            self.button_manager.make_visible('leave_button')
+            self.button_manager.make_visible('dummy')
+        else:
+            self.button_manager.make_invisible('mag_glass')
+            self.button_manager.make_invisible('leave_button')
+            self.button_manager.make_invisible('dummy')
         self.username_text.draw()
 
     def convert_grid_pos_into_render_pos(self, x, y):
@@ -155,13 +175,16 @@ class GameView(Event_Base.EventBase):
                               // State.state.cell_render_size.xf) - self.wcenter,
                              ((mouse_pos.y - (State.state.screen_center.yf - (State.state.cell_render_size.y * (self.slot_height / 2))))
                               // State.state.cell_render_size.yf) - self.hcenter, )
+
     """
     {...}|||{...}
     """
     socket_interval = 1 / 16
     elapsed_delta = 0
+
     # noinspection PyProtectedMember
     def update(self, delta_time: float):
+        super().update(delta_time)
         self.elapsed_delta += delta_time
         if self.elapsed_delta > self.socket_interval:
             if socket_alerts := socket_util.get_readable_sockets([self.socket]):
@@ -201,7 +224,12 @@ class GameView(Event_Base.EventBase):
         #             self.slots[(hovered.x, current)] =
         #         current = min(y, current)
 
+    def leave(self):
+        from Client import Main_View
+        State.state.window.show_view(Main_View.MainMenu(self.slot_width, self.slot_height, self.win_length))
+
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
+        super().on_mouse_release(x, y, button, modifiers)
         if button == 1:
             if not self.winner:
                 if self.drop_pos:
@@ -212,11 +240,9 @@ class GameView(Event_Base.EventBase):
                         'args': [(self.drop_pos[0], self.drop_pos[1]), f'{self.current_team}'],
                     }
                     socket_util.send_str(self.socket, json.dumps(string))
-            else:
-                from Client import Main_View
-                State.state.window.show_view(Main_View.MainMenu(self.slot_width, self.slot_height, self.win_length))
 
     def on_key_release(self, _symbol: int, _modifiers: int):
+        super().on_key_release(_symbol, _modifiers)
         if _symbol == arcade.key.ESCAPE:
             exit()
         if _symbol == arcade.key.Y:

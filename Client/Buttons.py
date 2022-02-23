@@ -6,7 +6,8 @@ import Vector
 
 
 class Button:
-    def __init__(self, id_, text, center, size, idle_texture, hover_texture, click_texture, disabled_texture, alpha, on_click, text_colour, hover_text_colour, click_text_colour, text_size, enabled):
+    def __init__(self, id_, text, center, size, idle_texture, hover_texture, click_texture, disabled_texture, alpha, on_click,
+                 text_colour, hover_text_colour, click_text_colour, text_size, enabled, visible):
         self.id_ = id_
         self.text = text
         self.center = center
@@ -22,18 +23,19 @@ class Button:
         self.click_text_colour = click_text_colour
         self.text_size = text_size
         self.enabled = enabled
+        self.visible = visible
 
     def get_actual_pos(self):
         if callable(self.center):
             return self.center()
         return self.center
-    
+
     def update(self):
         pass
 
 
 class TextInput:
-    def __init__(self, id_, prompt, center, size, idle_texture, hover_texture, alpha, on_click, text_colour, disabled_texture, text_size, text, enabled, text_length):
+    def __init__(self, id_, prompt, center, size, idle_texture, hover_texture, alpha, on_click, text_colour, disabled_texture, text_size, text, enabled, text_length, visible):
         self.id_ = id_
         self.center = center
         self.prompt = arcade.Text(prompt, self.get_actual_pos().x, self.get_actual_pos().y, text_colour, text_size, size.x, anchor_x='center', anchor_y='center')
@@ -48,12 +50,13 @@ class TextInput:
         self.text = arcade.Text(text, self.get_actual_pos().x, self.get_actual_pos().y, text_colour, text_size, size.x, font_name='Fonts/JetBrainsMono.ttf', anchor_x='center', anchor_y='center')
         self.enabled = enabled
         self.text_length = text_length
+        self.visible = visible
 
     def get_actual_pos(self):
         if callable(self.center):
             return self.center()
         return self.center
-    
+
     def update(self):
         self.prompt.x, self.prompt.y = self.get_actual_pos().x, self.get_actual_pos().y
         self.text.x, self.text.y = self.get_actual_pos().x, self.get_actual_pos().y
@@ -83,7 +86,8 @@ class ButtonManager:
                       click_text_colour=None,
                       disabled_texture: arcade.Texture = None,
                       text_size=22,
-                      enabled=True
+                      enabled=True,
+                      visible=True,
                       ):
         if hover_text_colour is None:
             hover_text_colour = text_colour
@@ -98,7 +102,7 @@ class ButtonManager:
         if not disabled_texture:
             disabled_texture = Sprites_.x
         self.buttons[id_] = Button(id_, text, center, size, idle_texture, hover_texture, click_texture, disabled_texture,
-                                   alpha, on_click, text_colour, hover_text_colour, click_text_colour, text_size, enabled)
+                                   alpha, on_click, text_colour, hover_text_colour, click_text_colour, text_size, enabled, visible)
 
     def append_input(self,
                      id_: str,
@@ -114,7 +118,8 @@ class ButtonManager:
                      text_size=22,
                      text: str = '',
                      enabled=True,
-                     text_length=-1
+                     text_length=-1,
+                     visible=True,
                      ):
         if not idle_texture:
             idle_texture = Sprites_.blank_button_dark
@@ -123,7 +128,7 @@ class ButtonManager:
         if not disabled_texture:
             disabled_texture = Sprites_.x
         self.inputs[id_] = TextInput(id_, prompt, center, size, idle_texture, hover_texture,
-                                     alpha, on_click, text_colour, disabled_texture, text_size, text, enabled, text_length)
+                                     alpha, on_click, text_colour, disabled_texture, text_size, text, enabled, text_length, visible)
 
     def render(self):
         self._button_render()
@@ -131,6 +136,8 @@ class ButtonManager:
 
     def _input_render(self):
         for input_ in self.inputs.values():
+            if not input_.visible:
+                continue
             render_prompt = True
             if input_.id_ not in self.hover_inputs and input_.id_ not in self.clicked_inputs:
                 texture = input_.idle_texture
@@ -151,6 +158,8 @@ class ButtonManager:
 
     def _button_render(self):
         for button in self.buttons.values():
+            if not button.visible:
+                continue
             if button.id_ not in self.hover_buttons and button.id_ not in self.clicked_buttons:
                 texture = button.idle_texture
                 text_colour = button.text_colour
@@ -182,18 +191,44 @@ class ButtonManager:
 
     def disable(self, id_):
         if id_ in self.buttons:
-            if self.buttons[id_].enabled:
-                self.buttons[id_].enabled = False
+            self.buttons[id_].enabled = False
 
     def enable(self, id_):
         if id_ in self.buttons:
-            if not self.buttons[id_].enabled:
-                self.buttons[id_].enabled = True
+            self.buttons[id_].enabled = True
+
+    def disablei(self, id_):
+        if id_ in self.inputs:
+            self.inputs[id_].enabled = False
+
+    def enablei(self, id_):
+        if id_ in self.inputs:
+            self.inputs[id_].enabled = True
+
+    def make_invisible(self, id_):
+        if id_ in self.buttons:
+            self.buttons[id_].visible = False
+
+    def make_visible(self, id_):
+        if id_ in self.buttons:
+            self.buttons[id_].visible = True
+
+    def make_invisiblei(self, id_):
+        if id_ in self.inputs:
+            self.inputs[id_].visible = False
+
+    def make_visiblei(self, id_):
+        if id_ in self.inputs:
+            self.inputs[id_].visible = True
 
     def update_elements(self):
         for input_ in self.inputs.values():
+            if not input_.visible:
+                continue
             input_.update()
         for button_ in self.buttons.values():
+            if not button_.visible:
+                continue
             button_.update()
 
     def clear_all(self, confirm):
@@ -218,11 +253,11 @@ class ButtonManager:
     def on_click_check(self, x, y):
         self.check_hovered(x, y)
         for id_ in self.hover_buttons:
-            if not self.buttons[id_].enabled:
+            if not self.buttons[id_].enabled or not self.buttons[id_].visible:
                 continue
             self.clicked_buttons.add(id_)
         for id_ in self.hover_inputs:
-            if not self.inputs[id_].enabled:
+            if not self.inputs[id_].enabled or not self.inputs[id_].visible:
                 continue
             self.clicked_inputs.add(id_)
         self.clicked_inputs = self.clicked_inputs & self.hover_inputs
@@ -237,7 +272,7 @@ class ButtonManager:
 
     def check_hovered(self, mouse_x, mouse_y):
         for button in self.buttons.values():
-            if not button.enabled:
+            if not button.enabled or not button.visible:
                 continue
             if (
                     mouse_x in range(int(button.get_actual_pos().x - (button.size.x / 2)), int((button.get_actual_pos().x + (button.size.x / 2)) + 1))
@@ -248,7 +283,7 @@ class ButtonManager:
             else:
                 self.hover_buttons.discard(button.id_)
         for input_ in self.inputs.values():
-            if not input_.enabled:
+            if not input_.enabled or not input_.visible:
                 continue
             if (
                     mouse_x in range(int(input_.get_actual_pos().x - (input_.size.x / 2)), int((input_.get_actual_pos().x + (input_.size.x / 2)) + 1))

@@ -44,7 +44,6 @@ class MainMenu(Event_Base.EventBase):
                                          text_colour=(255, 215, 0), text_length=13)
         self.button_manager.append_input('room_id', 'Room Name: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+101), Vector.Vector(190, 50),
                                          text_colour=(215, 215, 215), text_length=6)
-
         center = lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 250)
         self.center = center
         self.no_colour = False
