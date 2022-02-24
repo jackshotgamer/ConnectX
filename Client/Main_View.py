@@ -26,12 +26,10 @@ class MainMenu(Event_Base.EventBase):
         self.ui_manager = gui.UIManager(self.window)
         arcade.set_background_color((23, 93, 150))
         self.invalid_colour = False
-        self.slot_width = slot_width
-        self.slot_height = slot_height
-        self.win_length = win_length
         self.times = 1
         self.socket = None
         self.disabled_buttons = []
+        self.started = False
         self.full_lobby = False
         self.ui_manager.enable()
         # self.username = gui.UIInputText(State.state.screen_center.x - 85, State.state.screen_center.y + 10, 300, 50, 'Enter Username:', font_size=18, text_color=arcade.color.GOLD)  # 300, 50
@@ -42,8 +40,16 @@ class MainMenu(Event_Base.EventBase):
         self.button_manager.append_button('Quit', 'Quit', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 50), Vector.Vector(100, 50), on_click=self.exit_button)
         self.button_manager.append_input('username', 'Username: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+50), Vector.Vector(300, 50),
                                          text_colour=(255, 215, 0), text_length=13)
-        self.button_manager.append_input('room_id', 'Room Name: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+101), Vector.Vector(190, 50),
+        self.button_manager.append_input('room_id', 'Room Name: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+101+25), Vector.Vector(200, 50),
                                          text_colour=(215, 215, 215), text_length=6)
+        self.button_manager.append_input('input_x', 'Width:', lambda: Vector.Vector(State.state.screen_center.x - 56, State.state.screen_center.y+152+50), Vector.Vector(110, 50), text_length=2)
+        self.button_manager.append_input('input_y', 'Height:', lambda: Vector.Vector(State.state.screen_center.x + 56, State.state.screen_center.y+152+50), Vector.Vector(110, 50), text_length=2)
+        self.button_manager.append_input('win_length', 'Win Length:', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+203+50), Vector.Vector(200, 50), text_length=2)
+        self.room_id = self.button_manager.inputs['room_id'].text
+        self.slot_width = slot_width
+        self.slot_height = slot_height
+        self.win_length = win_length
+        
         center = lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 250)
         self.center = center
         self.no_colour = False
@@ -75,6 +81,7 @@ class MainMenu(Event_Base.EventBase):
         self.button_manager.append_button('purple', 'Purple', lambda: Vector.Vector(center().x - 100, center().y - 100), Vector.Vector(100, 100), on_click=partial(self.colour, 'purple'),
                                           idle_texture=Sprites_.purple_disc, hover_texture=Sprites_.purple_disc, click_texture=Sprites_.purple_disc, text_size=16, text_colour=(0, 0, 0),
                                           hover_text_colour=(100, 100, 100), click_text_colour=(200, 200, 200))
+        self.colour_buttons = ['red', 'yellow', 'green', 'blue', 'pink', 'lime', 'orange', 'purple']
         self.current_colour = 'None'
         self.preview_texture = Sprites_.disc_slot
 
@@ -87,7 +94,10 @@ class MainMenu(Event_Base.EventBase):
         # arcade.draw_rectangle_filled(450, 450 + 50, 250, 50, (0, 0, 0))
         arcade.draw_texture_rectangle(self.center().x, self.center().y, 100, 100, self.preview_texture)
         arcade.draw_text(f'Selected:\n{self.current_colour.upper()}', self.center().x, self.center().y, (0, 0, 0), 11, 100, align='center', bold=True, anchor_x='center', anchor_y='center', multiline=True)
-        if self.full_lobby:
+        if self.started:
+            arcade.draw_text('Game has started, please join another.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            self.errors()
+        elif self.full_lobby:
             arcade.draw_text('Game is full, please join another.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
         elif self.invalid_colour:
@@ -103,10 +113,18 @@ class MainMenu(Event_Base.EventBase):
             self.times = 1
         self.ui_manager.draw()
 
+    def on_update(self, delta_time: float):
+        super().on_update(delta_time)
+        if self.room_id != self.button_manager.inputs['room_id'].text:
+            for button in (self.button_manager.buttons[colour] for colour in self.colour_buttons):
+                button.enable()
+            self.room_id = self.button_manager.inputs['room_id'].text
+
     def errors(self):
         self.times += 1
         if not self.times % 50:
             self.times = 1
+            self.started = False
             self.full_lobby = False
             self.invalid_colour = False
             self.no_name = False
@@ -126,7 +144,8 @@ class MainMenu(Event_Base.EventBase):
                 self.no_colour = True
             return
         if self.establish_connection():
-            self.window.show_view(Game_View.GameView(self.slot_width, self.slot_height, self.win_length, player_username, self.current_colour, self.socket))
+            from Client.Lobby_View import LobbyView
+            self.window.show_view(LobbyView(self.button_manager.inputs['room_id'].text, self.socket, player_username, self.current_colour))
 
     def establish_connection(self):
         import socket as s

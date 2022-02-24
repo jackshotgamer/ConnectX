@@ -1,0 +1,5 @@
+Board size inputting in Lobby View
+Lobby View (Locks server once started) (Main view needs notification for started)
+Pinging for checking if clients leave (removes if not there) (Updates player list) (if in game, ends game)
+Player list in Lobby View
+Player list in Game_View
