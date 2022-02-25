@@ -15,7 +15,7 @@ class LobbyView(Event_Base.EventBase):
         super().__init__()
         self.room_id = room_id
         self.socket = socket
-        self.is_owner = True
+        self.is_owner = False
         self.players = {}
         self.ready_players = set()
         self.everyone_ready = True
@@ -33,6 +33,7 @@ class LobbyView(Event_Base.EventBase):
                                          text_length=2, visible=False)
         self.button_manager.append_button('confirm', 'Confirm', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y + 101 + 50), Vector.Vector(200, 50),
                                           on_click=self.confirm_button, visible=False)
+        self.owner_update()
 
     def on_draw(self):
         super().on_draw()
@@ -88,11 +89,11 @@ class LobbyView(Event_Base.EventBase):
             self.height_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
             self.win_length_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
         else:
-            self.width_text = arcade.Text(f'Width: {self.button_manager.buttons["input_x"].text.value if self.button_manager.buttons["input_x"].text.value else "7"}',
+            self.width_text = arcade.Text(f'Width: {self.button_manager.inputs["input_x"].text.value if self.button_manager.inputs["input_x"].text.value else "7"}',
                                           State.state.screen_center.x - 56, State.state.screen_center.y + 152 + 50, anchor_x='center', anchor_y='center')
-            self.height_text = arcade.Text(f'Height: {self.button_manager.buttons["input_y"].text.value if self.button_manager.buttons["input_y"].text.value else "6"}',
+            self.height_text = arcade.Text(f'Height: {self.button_manager.inputs["input_y"].text.value if self.button_manager.inputs["input_y"].text.value else "6"}',
                                            State.state.screen_center.x + 56, State.state.screen_center.y + 152 + 50, anchor_x='center', anchor_y='center')
-            self.win_length_text = arcade.Text(f'Win Length: {self.button_manager.buttons["win_length"].text.value if self.button_manager.buttons["win_length"].text.value else "4"}',
+            self.win_length_text = arcade.Text(f'Win Length: {self.button_manager.inputs["win_length"].text.value if self.button_manager.inputs["win_length"].text.value else "4"}',
                                                State.state.screen_center.x, State.state.screen_center.y + 203 + 50, anchor_x='center', anchor_y='center')
             self.button_manager.apply_state('input_x', self.button_manager.action_visible, force=False)
             self.button_manager.apply_state('input_y', self.button_manager.action_visible, force=False)
@@ -119,8 +120,8 @@ class LobbyView(Event_Base.EventBase):
                     if alert['type'] == 'leave':
                         pass
                     if alert['type'] == 'board_update':
+                        print(alert)
                         self.width_text.value = str(alert['args'][0])
                         self.height_text.value = str(alert['args'][1])
                         self.win_length_text.value = str(alert['args'][2])
-                    self.owner_update()
             self.elapsed_delta = 0
