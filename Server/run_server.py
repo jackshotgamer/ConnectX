@@ -83,18 +83,12 @@ class ClientThread(threading.Thread):
         self.slot_width = 7
         self.slot_height = 6
         self.win_length = 4
-        self.wcenter = int((self.slot_width - 1) / 2)
-        self.hcenter = int((self.slot_height - 1) / 2)
-        weven = True if not self.slot_width % 2 else False
-        heven = True if not self.slot_height % 2 else False
+        self.wcenter = 0
+        self.hcenter = 0
         self.current_turn = None
         self.first_join = False
         self.turn_order = []
-        self.slots = {
-            (self.wcenter - num1, self.hcenter - num2): neutral_colour
-            for num1 in range(- (1 if weven else 0), self.slot_width - (1 if weven else 0))
-            for num2 in range(- (1 if heven else 0), self.slot_height - (1 if heven else 0))
-        }
+        self.slots = {}
         self._commands = {}
         self.game_over = False
         import inspect
@@ -107,6 +101,28 @@ class ClientThread(threading.Thread):
     @property
     def sockets(self):
         return [x.sockt_ for x in self.game_clients if x.sockt_ is not None]
+
+    def populate_slots(self):
+        self.wcenter = int((self.slot_width - 1) / 2)
+        self.hcenter = int((self.slot_height - 1) / 2)
+        weven = True if not self.slot_width % 2 else False
+        heven = True if not self.slot_height % 2 else False
+        self.slots = {
+            (self.wcenter - num1, self.hcenter - num2): neutral_colour
+            for num1 in range(- (1 if weven else 0), self.slot_width - (1 if weven else 0))
+            for num2 in range(- (1 if heven else 0), self.slot_height - (1 if heven else 0))
+        }
+
+    @_command('set_board')
+    def cmd_set_board(self, data, socket_: s.socket, args):
+        self.slot_width, self.slot_height, self.win_length = args[0], args[1], args[2]
+        socket_util.send_str(socket_, json.dumps(data))
+        for client in self.game_clients:
+            socket_util.send_str(client.sockt_, json.dumps({'type': 'board_update', 'args': (self.slot_width, self.slot_height, self.win_length)}))
+
+    @_command('ready')
+    def cmd_ready(self, data, socket_: s.socket, args):
+        pass
 
     @_command('drop')
     def cmd_drop(self, data, socket_: s.socket, args):
@@ -149,8 +165,6 @@ class ClientThread(threading.Thread):
             self.current_turn = colour
             self.first_join = True
         self.turn_order.append(colour)
-        self.slot_width, self.slot_height = args[2]
-        self.win_length = args[3]
         """
         current:red
         
@@ -238,6 +252,7 @@ room_mngr.start()
 while True:
     connection, address = socket.accept()
     import json
+
     raw = socket_util.read_str(connection).strip('|')
     print(raw)
     packet = json.loads(raw)

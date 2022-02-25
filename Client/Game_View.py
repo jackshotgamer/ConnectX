@@ -155,13 +155,13 @@ class GameView(Event_Base.EventBase):
             self.winner_text1.draw()
             self.winner_text2.draw()
         if self.winner:
-            self.button_manager.make_visible('mag_glass')
-            self.button_manager.make_visible('leave_button')
-            self.button_manager.make_visible('dummy')
+            self.button_manager.apply_state('mag_glass', self.button_manager.action_visible, True)
+            self.button_manager.apply_state('leave_button', self.button_manager.action_visible, True)
+            self.button_manager.apply_state('dummy', self.button_manager.action_visible, True)
         else:
-            self.button_manager.make_invisible('mag_glass')
-            self.button_manager.make_invisible('leave_button')
-            self.button_manager.make_invisible('dummy')
+            self.button_manager.apply_state('mag_glass', self.button_manager.action_visible, False)
+            self.button_manager.apply_state('leave_button', self.button_manager.action_visible, False)
+            self.button_manager.apply_state('dummy', self.button_manager.action_visible, False)
         self.username_text.draw()
 
     def convert_grid_pos_into_render_pos(self, x, y):

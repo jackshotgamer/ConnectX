@@ -185,41 +185,48 @@ class ButtonManager:
                 arcade.draw_texture_rectangle(button.get_actual_pos().x, button.get_actual_pos().y, button.size.x * 0.8, button.size.y * 0.8,
                                               button.disabled_texture, alpha=button.alpha)
 
-    def remove(self, id_):
-        if id_ in self.buttons:
-            del self.buttons[id_]
+    action_remove = 'remove'
+    action_enabled = 'enabled'
+    action_visible = 'visible'
 
-    def disable(self, id_):
-        if id_ in self.buttons:
-            self.buttons[id_].enabled = False
+    def apply_state(self, id_, action, force=None):
+        if action.lower() == self.action_remove:
+            if id_ in self.buttons:
+                del self.buttons[id_]
+            if id_ in self.inputs:
+                del self.inputs[id_]
 
-    def enable(self, id_):
-        if id_ in self.buttons:
-            self.buttons[id_].enabled = True
+        elif action.lower() == self.action_enabled:
+            if id_ in self.buttons:
+                if force is None:
+                    self.buttons[id_].enabled = not self.buttons[id_].enabled
+                elif force:
+                    self.buttons[id_].enabled = True
+                elif not force:
+                    self.buttons[id_].enabled = False
+            if id_ in self.inputs:
+                if force is None:
+                    self.inputs[id_].enabled = not self.inputs[id_].enabled
+                elif force:
+                    self.inputs[id_].enabled = True
+                elif not force:
+                    self.inputs[id_].enabled = False
 
-    def disablei(self, id_):
-        if id_ in self.inputs:
-            self.inputs[id_].enabled = False
-
-    def enablei(self, id_):
-        if id_ in self.inputs:
-            self.inputs[id_].enabled = True
-
-    def make_invisible(self, id_):
-        if id_ in self.buttons:
-            self.buttons[id_].visible = False
-
-    def make_visible(self, id_):
-        if id_ in self.buttons:
-            self.buttons[id_].visible = True
-
-    def make_invisiblei(self, id_):
-        if id_ in self.inputs:
-            self.inputs[id_].visible = False
-
-    def make_visiblei(self, id_):
-        if id_ in self.inputs:
-            self.inputs[id_].visible = True
+        elif action.lower() == self.action_visible:
+            if id_ in self.buttons:
+                if force is None:
+                    self.buttons[id_].visible = not self.buttons[id_].visible
+                elif force:
+                    self.buttons[id_].visible = True
+                elif not force:
+                    self.buttons[id_].visible = False
+            if id_ in self.inputs:
+                if force is None:
+                    self.inputs[id_].visible = not self.inputs[id_].visible
+                elif force:
+                    self.inputs[id_].visible = True
+                elif not force:
+                    self.inputs[id_].visible = False
 
     def update_elements(self):
         for input_ in self.inputs.values():

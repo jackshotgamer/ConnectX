@@ -42,10 +42,7 @@ class MainMenu(Event_Base.EventBase):
                                          text_colour=(255, 215, 0), text_length=13)
         self.button_manager.append_input('room_id', 'Room Name: ', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+101+25), Vector.Vector(200, 50),
                                          text_colour=(215, 215, 215), text_length=6)
-        self.button_manager.append_input('input_x', 'Width:', lambda: Vector.Vector(State.state.screen_center.x - 56, State.state.screen_center.y+152+50), Vector.Vector(110, 50), text_length=2)
-        self.button_manager.append_input('input_y', 'Height:', lambda: Vector.Vector(State.state.screen_center.x + 56, State.state.screen_center.y+152+50), Vector.Vector(110, 50), text_length=2)
-        self.button_manager.append_input('win_length', 'Win Length:', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y+203+50), Vector.Vector(200, 50), text_length=2)
-        self.room_id = self.button_manager.inputs['room_id'].text
+        self.room_id = self.button_manager.inputs['room_id'].text.value
         self.slot_width = slot_width
         self.slot_height = slot_height
         self.win_length = win_length
@@ -95,19 +92,19 @@ class MainMenu(Event_Base.EventBase):
         arcade.draw_texture_rectangle(self.center().x, self.center().y, 100, 100, self.preview_texture)
         arcade.draw_text(f'Selected:\n{self.current_colour.upper()}', self.center().x, self.center().y, (0, 0, 0), 11, 100, align='center', bold=True, anchor_x='center', anchor_y='center', multiline=True)
         if self.started:
-            arcade.draw_text('Game has started, please join another.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            arcade.draw_text('Game has started, please join another.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
         elif self.full_lobby:
-            arcade.draw_text('Game is full, please join another.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            arcade.draw_text('Game is full, please join another.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
         elif self.invalid_colour:
-            arcade.draw_text('Invalid colour, please select another.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            arcade.draw_text('Invalid colour, please select another.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
         elif self.no_name:
-            arcade.draw_text('Please input a name.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            arcade.draw_text('Please input a name.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
         elif self.no_colour:
-            arcade.draw_text('Please select a colour.', State.state.screen_center.x, State.state.screen_center.y + 125, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            arcade.draw_text('Please select a colour.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
         else:
             self.times = 1
@@ -115,10 +112,10 @@ class MainMenu(Event_Base.EventBase):
 
     def on_update(self, delta_time: float):
         super().on_update(delta_time)
-        if self.room_id != self.button_manager.inputs['room_id'].text:
-            for button in (self.button_manager.buttons[colour] for colour in self.colour_buttons):
-                button.enable()
-            self.room_id = self.button_manager.inputs['room_id'].text
+        if self.room_id != self.button_manager.inputs['room_id'].text.value:
+            for button in (self.button_manager.buttons[id_] for id_ in self.colour_buttons):
+                self.button_manager.apply_state(button.id_, self.button_manager.action_enabled, True)
+            self.room_id = self.button_manager.inputs['room_id'].text.value
 
     def errors(self):
         self.times += 1
@@ -161,7 +158,7 @@ class MainMenu(Event_Base.EventBase):
         string = {
             'type': 'command',
             'command': 'join',
-            'args': [f'{self.button_manager.inputs["username"].text.value}', f'{self.current_colour}', (self.slot_width, self.slot_height), self.win_length],
+            'args': [f'{self.button_manager.inputs["username"].text.value}', f'{self.current_colour}'],
         }
         socket_util.send_str(self.socket, json.dumps(string))
         read = json.loads(socket_util.read_str(self.socket).strip('|||'))
@@ -172,7 +169,7 @@ class MainMenu(Event_Base.EventBase):
             else:
                 self.invalid_colour = True
                 for colour in read.get('invalidCol', []):
-                    self.button_manager.disable(colour)
+                    self.button_manager.apply_state(colour, self.button_manager.action_enabled, False)
                     self.disabled_buttons.append(colour)
                     success = False
         return success
