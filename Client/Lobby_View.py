@@ -65,7 +65,9 @@ class LobbyView(Event_Base.EventBase):
     elapsed_delta = 0
 
     def set_board_info(self):
-        self.owner_update()
+        # self.owner_update()
+        print(f'Stuff2: {self.width, self.height, self.win_length}')
+
         if self.width_text.value:
             input_x = self.width_text.value
         else:
@@ -91,6 +93,8 @@ class LobbyView(Event_Base.EventBase):
             win_length = 4
         board_info2 = [self.width, self.height, self.win_length]
         board_info1 = [input_x, input_y, win_length]
+        print(f'Board info1: {board_info1}')
+
         for index, item in enumerate(zip(board_info1, board_info2)):
             if not item[0]:
                 if item[1]:
@@ -105,7 +109,7 @@ class LobbyView(Event_Base.EventBase):
         self.width = board_info1[0]
         self.height = board_info1[1]
         self.win_length = board_info1[2]
-        print(f'Board info: {board_info1}')
+        print(f'Board info2: {board_info1}')
 
     def ready_button(self):
         if self.everyone_ready:
@@ -160,7 +164,7 @@ class LobbyView(Event_Base.EventBase):
                         self.width = alert['args'][0]
                         self.height = alert['args'][1]
                         self.win_length = alert['args'][2]
-                        print(f'Stuff: {self.width, self.height, self.win_length}')
+                        print(f'Stuff1: {self.width, self.height, self.win_length}')
                         self.set_board_info()
                         self.owner_update()
             self.elapsed_delta = 0
