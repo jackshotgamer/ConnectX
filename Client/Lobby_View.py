@@ -82,7 +82,7 @@ class LobbyView(Event_Base.EventBase):
             win_length = self.win_length_text.value
         else:
             win_length = self.button_manager.inputs['win_length'].text.value
-
+        print(f'Things: {input_x, input_y, win_length}')
         try:
             input_x = int(input_x) if input_x else 7
             input_y = int(input_y) if input_y else 6
