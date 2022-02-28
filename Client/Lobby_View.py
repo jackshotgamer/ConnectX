@@ -160,4 +160,6 @@ class LobbyView(Event_Base.EventBase):
                         self.width = alert['args'][0]
                         self.height = alert['args'][1]
                         self.win_length = alert['args'][2]
+                        self.set_board_info()
+                        self.owner_update()
             self.elapsed_delta = 0
