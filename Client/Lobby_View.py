@@ -88,6 +88,7 @@ class LobbyView(Event_Base.EventBase):
             input_y = int(input_y) if input_y else 6
             win_length = int(win_length) if win_length else 4
         except ValueError:
+            print('ValueError')
             input_x = 7
             input_y = 6
             win_length = 4
