@@ -189,7 +189,14 @@ class GameView(Event_Base.EventBase):
         if self.elapsed_delta > self.socket_interval:
             if socket_alerts := socket_util.get_readable_sockets([self.socket]):
                 import json
-                raw = socket_util.read_str(socket_alerts[0])
+                try:
+                    raw = socket_util.read_str(socket_alerts[0])
+                except ConnectionError:
+                    import traceback
+                    import sys
+                    print(f'Error: {traceback.format_exc()}', file=sys.stderr)
+                    self.leave()
+                    return
                 for alert1 in raw.split('|||'):
                     if not alert1.strip():
                         continue

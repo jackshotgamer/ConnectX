@@ -29,6 +29,7 @@ class MainMenu(Event_Base.EventBase):
         self.times = 1
         self.socket = None
         self.disabled_buttons = []
+        self.error = ''
         self.started = False
         self.full_lobby = False
         self.ui_manager.enable()
@@ -90,7 +91,8 @@ class MainMenu(Event_Base.EventBase):
         super().on_draw()
         # arcade.draw_rectangle_filled(450, 450 + 50, 250, 50, (0, 0, 0))
         arcade.draw_texture_rectangle(self.center().x, self.center().y, 100, 100, self.preview_texture)
-        arcade.draw_text(f'Selected:\n{self.current_colour.upper()}', self.center().x, self.center().y, (0, 0, 0), 11, 100, align='center', bold=True, anchor_x='center', anchor_y='center', multiline=True)
+        arcade.draw_text(f'Selected:\n{self.current_colour.upper()}', self.center().x, self.center().y, (0, 0, 0), 11, 100, align='center', bold=True,
+                         anchor_x='center', anchor_y='center', multiline=True)
         if self.started:
             arcade.draw_text('Game has started, please join another.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
             self.errors()
@@ -105,6 +107,10 @@ class MainMenu(Event_Base.EventBase):
             self.errors()
         elif self.no_colour:
             arcade.draw_text('Please select a colour.', State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 30, bold=True, anchor_x='center', anchor_y='center')
+            self.errors()
+        elif self.error:
+            arcade.draw_text(self.error, State.state.screen_center.x, State.state.screen_center.y + 200, (255, 0, 0), 25, 750, bold=True, align='center', anchor_x='center', anchor_y='center',
+                             multiline=True)
             self.errors()
         else:
             self.times = 1
@@ -126,6 +132,7 @@ class MainMenu(Event_Base.EventBase):
             self.invalid_colour = False
             self.no_name = False
             self.no_colour = False
+            self.error = ''
 
     def enter_button(self):
         player_username = self.button_manager.inputs['username'].text.value
@@ -160,7 +167,11 @@ class MainMenu(Event_Base.EventBase):
             'command': 'join',
             'args': [f'{self.button_manager.inputs["username"].text.value}', f'{self.current_colour}'],
         }
-        socket_util.send_str(self.socket, json.dumps(string))
+        try:
+            socket_util.send_str(self.socket, json.dumps(string))
+        except ConnectionResetError:
+            self.error = 'Connection Error\nPlease check internet'
+            return
         read = json.loads(socket_util.read_str(self.socket).strip('|||'))
         if read.get('error') == 'DupeCol':
             if len(read.get('invalidCol', [])) >= 8:

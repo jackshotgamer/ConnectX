@@ -15,12 +15,15 @@ class LobbyView(Event_Base.EventBase):
         super().__init__()
         self.room_id = room_id
         self.socket = socket
-        self.is_owner = False
+        self.is_owner = True
         self.players = {}
         self.ready_players = set()
         self.everyone_ready = True
         self.name = name
         self.colour = colour
+        self.width = None
+        self.height = None
+        self.win_length = None
         self.width_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
         self.height_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
         self.win_length_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
@@ -43,17 +46,18 @@ class LobbyView(Event_Base.EventBase):
 
     def confirm_button(self):
         import json
+        self.set_board_info()
         string = {
             'type': 'command',
             'command': 'set_board',
-            'args': self.get_board_info()
+            'args': (self.width, self.height, self.win_length)
         }
         socket_util.send_str(self.socket, json.dumps(string))
 
     socket_interval = 1 / 16
     elapsed_delta = 0
 
-    def get_board_info(self):
+    def set_board_info(self):
         if self.width_text.value:
             input_x = self.width_text.value
         else:
@@ -69,15 +73,36 @@ class LobbyView(Event_Base.EventBase):
         else:
             win_length = self.button_manager.inputs['win_length'].text.value
 
-        input_x = int(input_x) if input_x and input_x.isdigit() else 7
-        input_y = int(input_y) if input_y and input_y.isdigit() else 6
-        win_length = int(win_length) if win_length and win_length.isdigit() else 4
-        return input_x, input_y, win_length
+        try:
+            input_x = int(input_x) if input_x else 7
+            input_y = int(input_y) if input_y else 6
+            win_length = int(win_length) if win_length else 4
+        except ValueError:
+            input_x = 7
+            input_y = 6
+            win_length = 4
+
+        board_info1 = [self.width, self.height, self.win_length]
+        board_info2 = [input_x, input_y, win_length]
+        for index, item in enumerate(zip(board_info1, board_info2)):
+            if not item[0]:
+                if item[1]:
+                    board_info1[index] = item[1]
+                else:
+                    if index == 0:
+                        board_info1[index] = 7
+                    elif index == 1:
+                        board_info1[index] = 6
+                    else:
+                        board_info1[index] = 4
+        self.width = board_info1[0]
+        self.height = board_info1[1]
+        self.win_length = board_info1[2]
 
     def ready_button(self):
-        board_info = self.get_board_info()
         if self.everyone_ready:
-            State.state.window.show_view(Game_View.GameView(board_info[0], board_info[1], board_info[2], self.name, self.colour, self.socket))
+            self.set_board_info()
+            State.state.window.show_view(Game_View.GameView(self.width, self.height, self.win_length, self.name, self.colour, self.socket))
 
     def owner_update(self):
         if self.is_owner:
@@ -121,7 +146,7 @@ class LobbyView(Event_Base.EventBase):
                         pass
                     if alert['type'] == 'board_update':
                         print(alert)
-                        self.width_text.value = str(alert['args'][0])
-                        self.height_text.value = str(alert['args'][1])
-                        self.win_length_text.value = str(alert['args'][2])
+                        self.width_text.value = f"Width: {str(alert['args'][0])}"
+                        self.height_text.value = f"Height: {str(alert['args'][1])}"
+                        self.win_length_text.value = f"Win Length: {str(alert['args'][2])}"
             self.elapsed_delta = 0

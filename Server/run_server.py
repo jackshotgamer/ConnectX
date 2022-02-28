@@ -80,9 +80,9 @@ class ClientThread(threading.Thread):
     def __init__(self):
         super().__init__()
         self.game_clients: Deque[GameClient] = collections.deque()
-        self.slot_width = 7
-        self.slot_height = 6
-        self.win_length = 4
+        self.slot_width = None
+        self.slot_height = None
+        self.win_length = None
         self.wcenter = 0
         self.hcenter = 0
         self.current_turn = None
@@ -107,15 +107,22 @@ class ClientThread(threading.Thread):
         self.hcenter = int((self.slot_height - 1) / 2)
         weven = True if not self.slot_width % 2 else False
         heven = True if not self.slot_height % 2 else False
+        self.slots = {}
         self.slots = {
             (self.wcenter - num1, self.hcenter - num2): neutral_colour
             for num1 in range(- (1 if weven else 0), self.slot_width - (1 if weven else 0))
             for num2 in range(- (1 if heven else 0), self.slot_height - (1 if heven else 0))
         }
+        print('')
+        print(f'Slots = {self.slots}')
+        print('')
 
     @_command('set_board')
     def cmd_set_board(self, data, socket_: s.socket, args):
+        print(f'Args: {args}')
         self.slot_width, self.slot_height, self.win_length = args[0], args[1], args[2]
+        print(f'Slot Width: {self.slot_width}, Slot Height: {self.slot_height}')
+        self.populate_slots()
         socket_util.send_str(socket_, json.dumps(data))
         for client in self.game_clients:
             socket_util.send_str(client.sockt_, json.dumps({'type': 'board_update', 'args': (self.slot_width, self.slot_height, self.win_length)}))
@@ -214,7 +221,6 @@ class ClientThread(threading.Thread):
                         connection_.close()
                         self.game_clients.remove(self.game_client_from_socket(connection_))
             time.sleep(0.0001)
-        print('closed for business!')
 
     def handle_command(self, data, socket_):
         print(data)
