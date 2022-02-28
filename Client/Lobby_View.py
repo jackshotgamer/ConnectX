@@ -89,7 +89,6 @@ class LobbyView(Event_Base.EventBase):
             input_x = 7
             input_y = 6
             win_length = 4
-        print()
         board_info2 = [self.width, self.height, self.win_length]
         board_info1 = [input_x, input_y, win_length]
         for index, item in enumerate(zip(board_info1, board_info2)):
@@ -106,6 +105,7 @@ class LobbyView(Event_Base.EventBase):
         self.width = board_info1[0]
         self.height = board_info1[1]
         self.win_length = board_info1[2]
+        print(f'Board info: {board_info1}')
 
     def ready_button(self):
         if self.everyone_ready:
@@ -160,6 +160,7 @@ class LobbyView(Event_Base.EventBase):
                         self.width = alert['args'][0]
                         self.height = alert['args'][1]
                         self.win_length = alert['args'][2]
+                        print(f'Stuff: {self.width, self.height, self.win_length}')
                         self.set_board_info()
                         self.owner_update()
             self.elapsed_delta = 0
