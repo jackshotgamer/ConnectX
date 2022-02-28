@@ -36,6 +36,8 @@ class LobbyView(Event_Base.EventBase):
                                          text_length=2, visible=False)
         self.button_manager.append_button('confirm', 'Confirm', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y + 101 + 50), Vector.Vector(200, 50),
                                           on_click=self.confirm_button, visible=False)
+        self.button_manager.append_button('set_owner', 'Toggle Owner', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y + 50 + 50), Vector.Vector(200, 50),
+                                          on_click=self.toggle_owner, visible=True)
         self.owner_update()
 
     def on_draw(self):
@@ -43,6 +45,10 @@ class LobbyView(Event_Base.EventBase):
         self.width_text.draw()
         self.height_text.draw()
         self.win_length_text.draw()
+
+    def toggle_owner(self):
+        self.is_owner = not self.is_owner
+        self.owner_update()
 
     def confirm_button(self):
         import json
