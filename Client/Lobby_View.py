@@ -15,7 +15,7 @@ class LobbyView(Event_Base.EventBase):
         super().__init__()
         self.room_id = room_id
         self.socket = socket
-        self.is_owner = True
+        self.is_owner = False
         self.players = {}
         self.ready_players = set()
         self.everyone_ready = True
@@ -47,6 +47,7 @@ class LobbyView(Event_Base.EventBase):
     def confirm_button(self):
         import json
         self.set_board_info()
+        print(f'A: {self.width, self.height, self.win_length}')
         string = {
             'type': 'command',
             'command': 'set_board',
