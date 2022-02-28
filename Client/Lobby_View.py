@@ -157,4 +157,7 @@ class LobbyView(Event_Base.EventBase):
                         self.width_text.value = f"Width: {str(alert['args'][0])}"
                         self.height_text.value = f"Height: {str(alert['args'][1])}"
                         self.win_length_text.value = f"Win Length: {str(alert['args'][2])}"
+                        self.width = alert['args'][0]
+                        self.height = alert['args'][1]
+                        self.win_length = alert['args'][2]
             self.elapsed_delta = 0
