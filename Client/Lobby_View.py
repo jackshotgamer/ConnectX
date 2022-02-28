@@ -65,6 +65,7 @@ class LobbyView(Event_Base.EventBase):
     elapsed_delta = 0
 
     def set_board_info(self):
+        self.owner_update()
         if self.width_text.value:
             input_x = self.width_text.value
         else:
@@ -88,9 +89,9 @@ class LobbyView(Event_Base.EventBase):
             input_x = 7
             input_y = 6
             win_length = 4
-
-        board_info1 = [self.width, self.height, self.win_length]
-        board_info2 = [input_x, input_y, win_length]
+        print()
+        board_info2 = [self.width, self.height, self.win_length]
+        board_info1 = [input_x, input_y, win_length]
         for index, item in enumerate(zip(board_info1, board_info2)):
             if not item[0]:
                 if item[1]:
