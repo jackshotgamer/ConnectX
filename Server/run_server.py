@@ -200,14 +200,6 @@ class ClientThread(threading.Thread):
         import json
         while not self.game_over:
             if self.sockets:
-                # for connection_ in socket_util.get_writeable_sockets(self.sockets):
-                #     socket_util.send(connection_, (b"This connection is sponsored by NordVPN. "
-                #                                    b"Staying safe online is an ever growing difficulty and you could be exploited by hackers. "
-                #                                    b"NordVPN allows you to change your IP address, making you harder to track, securing your privacy. "
-                #                                    b"Check out the link in the connection to get 20% off for the first two months and thank you to NordVPN for sponsoring this connection. "
-                #                                    b"link: www.totallynotafakeaddress.com"))
-                #     connection_.close()
-                #     self.sockets.remove(connection_)
                 for connection_ in socket_util.get_readable_sockets(self.sockets):
                     try:
                         strings = self.parse_json(connection_)
@@ -220,6 +212,7 @@ class ClientThread(threading.Thread):
                     except socket_util.SOCKET_ERRORS:
                         connection_.close()
                         self.game_clients.remove(self.game_client_from_socket(connection_))
+                        print(self.game_clients)
             time.sleep(0.0001)
 
     def handle_command(self, data, socket_):
