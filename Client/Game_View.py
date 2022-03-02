@@ -214,6 +214,8 @@ class GameView(Event_Base.EventBase):
                     if alert['type'] == 'set_turn':
                         self.turn = alert['turn']
                         self.turn_text.value = f'{self.turn.upper()}\'s turn!'
+                    if alert['type'] == 'leave':
+                        print(alert)
             self.elapsed_delta = 0
         hovered = (self.hovered_lane())
         self.username_text.x, self.username_text.y = State.state.screen_center.x, State.state.window.height - 20

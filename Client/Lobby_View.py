@@ -161,7 +161,7 @@ class LobbyView(Event_Base.EventBase):
                     if alert['type'] == 'join':
                         pass
                     if alert['type'] == 'leave':
-                        pass
+                        print(alert)
                     if alert['type'] == 'board_update':
                         print(alert)
                         self.width_text.value = f"Width: {str(alert['args'][0])}"

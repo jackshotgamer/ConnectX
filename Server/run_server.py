@@ -141,17 +141,7 @@ class ClientThread(threading.Thread):
                 self.slots[(drop_pos[0], drop_pos[1])] = current_team
                 from Win_Checker import win_check
                 winner = win_check(self.slots, drop_pos[0], drop_pos[1], self.win_length)
-                turn = False
-                done_once = False
-                for c in self.turn_order:
-                    if turn:
-                        self.turn_order.remove(self.current_turn)
-                        self.turn_order.append(self.current_turn)
-                        self.current_turn = c
-                        turn = False
-                        done_once = True
-                    if self.current_turn == c and not done_once:
-                        turn = True
+                self.next_turn()
                 for client in self.sockets:
                     socket_util.send_str(client, json.dumps({'type': 'drop_confirm', 'coords': drop_pos, 'drop_team': current_team, 'winner': winner, 'turn': self.current_turn}))
                 if winner:
@@ -163,6 +153,19 @@ class ClientThread(threading.Thread):
                         except Exception as e:
                             print(e)
                     self.game_over = True
+
+    def next_turn(self):
+        turn = False
+        done_once = False
+        for c in self.turn_order:
+            if turn:
+                self.turn_order.remove(self.current_turn)
+                self.turn_order.append(self.current_turn)
+                self.current_turn = c
+                turn = False
+                done_once = True
+            if self.current_turn == c and not done_once:
+                turn = True
 
     @_command('join')
     def cmd_join(self, data, socket_: s.socket, args):
@@ -211,8 +214,21 @@ class ClientThread(threading.Thread):
                                 socket_util.send_str(connection_, json.dumps((ERROR_invalid_json, 'Error: Not JSON')))
                     except socket_util.SOCKET_ERRORS:
                         connection_.close()
-                        self.game_clients.remove(self.game_client_from_socket(connection_))
-                        print(self.game_clients)
+                for index in range(len(self.game_clients)-1, -1, -1):
+                    client = self.game_clients[index]
+                    socket = client.sockt_
+                    if socket.fileno() == -1:
+                        self.turn_order.remove(client.colour)
+                        if not self.turn_order:
+                            self.game_over = True
+                            return
+                        for connection_ in socket_util.get_writeable_sockets(self.sockets):
+                            string = {
+                                'type': 'command',
+                                'command': 'leave',
+                                'args': [f'{client.colour}'],
+                            }
+                            socket_util.send_str(connection_, json.dumps(string))
             time.sleep(0.0001)
 
     def handle_command(self, data, socket_):
