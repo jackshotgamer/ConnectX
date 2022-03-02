@@ -201,6 +201,8 @@ class ClientThread(threading.Thread):
 
     def run(self):
         import json
+        import time
+        time_ = time.time()
         while not self.game_over:
             if self.sockets:
                 for connection_ in socket_util.get_readable_sockets(self.sockets):
@@ -214,21 +216,25 @@ class ClientThread(threading.Thread):
                                 socket_util.send_str(connection_, json.dumps((ERROR_invalid_json, 'Error: Not JSON')))
                     except socket_util.SOCKET_ERRORS:
                         connection_.close()
-                for index in range(len(self.game_clients)-1, -1, -1):
-                    client = self.game_clients[index]
-                    socket = client.sockt_
-                    if socket.fileno() == -1:
-                        self.turn_order.remove(client.colour)
-                        if not self.turn_order:
-                            self.game_over = True
-                            return
-                        for connection_ in socket_util.get_writeable_sockets(self.sockets):
-                            string = {
-                                'type': 'command',
-                                'command': 'leave',
-                                'args': [f'{client.colour}'],
-                            }
-                            socket_util.send_str(connection_, json.dumps(string))
+                if time.time() - time_ >= 2:
+                    print(self.game_clients)
+                    for index in range(len(self.game_clients)-1, -1, -1):
+                        client = self.game_clients[index]
+                        socket = client.sockt_
+                        if socket.fileno() == -1:
+                            print('Turn order 1: ', self.turn_order)
+                            self.turn_order.remove(client.colour)
+                            print('Turn order 2: ', self.turn_order)
+                            if not self.turn_order:
+                                self.game_over = True
+                                return
+                            for connection_ in socket_util.get_writeable_sockets(self.sockets):
+                                string = {
+                                    'type': 'command',
+                                    'command': 'leave',
+                                    'args': [f'{client.colour}'],
+                                }
+                                socket_util.send_str(connection_, json.dumps(string))
             time.sleep(0.0001)
 
     def handle_command(self, data, socket_):
