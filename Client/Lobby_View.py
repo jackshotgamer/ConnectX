@@ -69,17 +69,17 @@ class LobbyView(Event_Base.EventBase):
         print(f'Stuff2: {self.width, self.height, self.win_length}')
 
         if self.width_text.value:
-            input_x = self.width_text.value
+            input_x = self.width
         else:
             input_x = self.button_manager.inputs['input_x'].text.value
 
         if self.height_text.value:
-            input_y = self.height_text.value
+            input_y = self.height
         else:
             input_y = self.button_manager.inputs['input_y'].text.value
 
         if self.win_length_text.value:
-            win_length = self.win_length_text.value
+            win_length = self.win_length
         else:
             win_length = self.button_manager.inputs['win_length'].text.value
         print(f'Things: {input_x, input_y, win_length}')
@@ -90,6 +90,8 @@ class LobbyView(Event_Base.EventBase):
             input_y = int(input_y) if input_y else 6
             win_length = int(win_length) if win_length else 4
         except ValueError:
+            import traceback
+            traceback.print_exc()
             # FIXME
             print('ValueError')
             input_x = 7
