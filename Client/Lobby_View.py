@@ -132,11 +132,11 @@ class LobbyView(Event_Base.EventBase):
             self.height_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
             self.win_length_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
         else:
-            self.width_text = arcade.Text(f'Width: {self.button_manager.inputs["input_x"].text.value if self.button_manager.inputs["input_x"].text.value else "7"}',
+            self.width_text = arcade.Text(f'Width: {self.width if self.width else "7"}',
                                           State.state.screen_center.x - 56, State.state.screen_center.y + 152 + 50, anchor_x='center', anchor_y='center')
-            self.height_text = arcade.Text(f'Height: {self.button_manager.inputs["input_y"].text.value if self.button_manager.inputs["input_y"].text.value else "6"}',
+            self.height_text = arcade.Text(f'Height: {self.height if self.height else "6"}',
                                            State.state.screen_center.x + 56, State.state.screen_center.y + 152 + 50, anchor_x='center', anchor_y='center')
-            self.win_length_text = arcade.Text(f'Win Length: {self.button_manager.inputs["win_length"].text.value if self.button_manager.inputs["win_length"].text.value else "4"}',
+            self.win_length_text = arcade.Text(f'Win Length: {self.win_length if self.win_length else "4"}',
                                                State.state.screen_center.x, State.state.screen_center.y + 203 + 50, anchor_x='center', anchor_y='center')
             self.button_manager.apply_state('input_x', self.button_manager.action_visible, force=False)
             self.button_manager.apply_state('input_y', self.button_manager.action_visible, force=False)
