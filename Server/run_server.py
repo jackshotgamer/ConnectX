@@ -49,16 +49,64 @@ CHANGE TURN <-----┛       |
 """
 
 
+class PingManager:
+    def __init__(self, room: "RoomThread"):
+        self.room = room
+        self.pending_pings = {}
+        self.erroneous_clients = []
+
+    def send_ping(self):
+        import time
+        for client in self.room.game_clients:
+            if client.colour not in self.pending_pings:
+                try:
+                    socket_util.send_str(client.sockt_, json.dumps({'type': 'ping', 'args': ['typing?']}))
+                    self.pending_pings[f'{client.colour}'] = (time.time(), client)
+                except socket_util.SOCKET_ERRORS:
+                    self.erroneous_clients.append(client)
+
+    def receive_pong(self, colour):
+        if colour in self.pending_pings:
+            del self.pending_pings[colour]
+
+    def check_pings(self):
+        for colour, (time_point, client) in tuple(self.pending_pings.items()):
+            if time.time() - time_point > 3:
+                del self.pending_pings[colour]
+                self.remove_stuff(client)
+        for index in range(len(self.erroneous_clients) - 1, -1, -1):
+            client2 = self.erroneous_clients[index]
+            del self.erroneous_clients[index]
+            self.remove_stuff(client2)
+
+    def remove_stuff(self, client):
+        for connection_ in socket_util.get_writeable_sockets(self.room.sockets):
+            string = {
+                'type': 'command',
+                'command': 'leave',
+                'args': [f'{client.colour}'],
+            }
+            socket_util.send_str(connection_, json.dumps(string))
+        for index in range(len(self.room.game_clients) - 1, -1, -1):
+            if client.colour == self.room.game_clients[index].colour:
+                del self.room.game_clients[index]
+                self.room.turn_order.remove(client.colour)
+                if not self.room.turn_order:
+                    self.room.game_over = True
+                    return
+                return
+
+
 class ManagerThread(threading.Thread):
     def __init__(self):
         super().__init__()
-        self.rooms: dict[str, 'ClientThread'] = {}
+        self.rooms: dict[str, 'RoomThread'] = {}
 
     def get_or_create_room(self, room_id):
         return self.rooms[room_id] if room_id in self.rooms else self.create_room(room_id)
 
     def create_room(self, room_id):
-        client = ClientThread()
+        client = RoomThread()
         self.rooms[room_id] = client
         client.start()
         return client
@@ -76,7 +124,7 @@ class ManagerThread(threading.Thread):
 neutral_colour = 'gray'
 
 
-class ClientThread(threading.Thread):
+class RoomThread(threading.Thread):
     def __init__(self):
         super().__init__()
         self.game_clients: Deque[GameClient] = collections.deque()
@@ -91,6 +139,7 @@ class ClientThread(threading.Thread):
         self.slots = {}
         self._commands = {}
         self.game_over = False
+        self.ping_manager = PingManager(self)
         import inspect
         for item in self.__class__.__dict__.values():
             if inspect.isfunction(item):
@@ -199,6 +248,10 @@ class ClientThread(threading.Thread):
                 return client
         return None
 
+    @_command('pong')
+    def cmd_pong(self, data, socket_: s.socket, args):
+        self.ping_manager.receive_pong(args[0])
+
     def run(self):
         import json
         import time
@@ -216,25 +269,10 @@ class ClientThread(threading.Thread):
                                 socket_util.send_str(connection_, json.dumps((ERROR_invalid_json, 'Error: Not JSON')))
                     except socket_util.SOCKET_ERRORS:
                         connection_.close()
-                if time.time() - time_ >= 2:
-                    print(self.game_clients)
-                    for index in range(len(self.game_clients)-1, -1, -1):
-                        client = self.game_clients[index]
-                        socket = client.sockt_
-                        if socket.fileno() == -1:
-                            print('Turn order 1: ', self.turn_order)
-                            self.turn_order.remove(client.colour)
-                            print('Turn order 2: ', self.turn_order)
-                            if not self.turn_order:
-                                self.game_over = True
-                                return
-                            for connection_ in socket_util.get_writeable_sockets(self.sockets):
-                                string = {
-                                    'type': 'command',
-                                    'command': 'leave',
-                                    'args': [f'{client.colour}'],
-                                }
-                                socket_util.send_str(connection_, json.dumps(string))
+                if time.time() - time_ >= 5:
+                    time_ = time.time()
+                    self.ping_manager.send_ping()
+                    self.ping_manager.check_pings()
             time.sleep(0.0001)
 
     def handle_command(self, data, socket_):

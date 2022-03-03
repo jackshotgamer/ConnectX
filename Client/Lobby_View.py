@@ -154,6 +154,8 @@ class LobbyView(Event_Base.EventBase):
                     if not alert1.strip():
                         continue
                     alert = json.loads(alert1)
+                    if alert['type'] == 'ping':
+                        socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'pong', 'args': [self.colour, 'typong?']}))
                     if alert['type'] == 'ready':
                         pass
                     if alert['type'] == 'start':

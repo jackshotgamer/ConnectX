@@ -216,6 +216,8 @@ class GameView(Event_Base.EventBase):
                         self.turn_text.value = f'{self.turn.upper()}\'s turn!'
                     if alert['type'] == 'leave':
                         print(alert)
+                    if alert['type'] == 'ping':
+                        socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'pong', 'args': [self.current_team, 'typong?']}))
             self.elapsed_delta = 0
         hovered = (self.hovered_lane())
         self.username_text.x, self.username_text.y = State.state.screen_center.x, State.state.window.height - 20
