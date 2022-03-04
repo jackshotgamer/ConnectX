@@ -138,6 +138,7 @@ class RoomThread(threading.Thread):
         self.hcenter = 0
         self.current_turn = None
         self.first_join = False
+        self.populated_slots = False
         self.turn_order = []
         self.slots = {}
         self._commands = {}
@@ -174,7 +175,9 @@ class RoomThread(threading.Thread):
         print(f'Args: {args}')
         self.slot_width, self.slot_height, self.win_length = args[0], args[1], args[2]
         print(f'Slot Width: {self.slot_width}, Slot Height: {self.slot_height}')
-        self.populate_slots()
+        if not self.populated_slots:
+            self.populate_slots()
+            self.populated_slots = True
         socket_util.send_str(socket_, json.dumps(data))
         for client in self.game_clients:
             socket_util.send_str(client.sockt_, json.dumps({'type': 'board_update', 'args': (self.slot_width, self.slot_height, self.win_length)}))
