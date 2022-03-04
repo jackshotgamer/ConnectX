@@ -86,7 +86,10 @@ class PingManager:
                 'command': 'leave',
                 'args': [f'{client.colour}'],
             }
-            socket_util.send_str(connection_, json.dumps(string))
+            try:
+                socket_util.send_str(connection_, json.dumps(string))
+            except BrokenPipeError:
+                pass
         for index in range(len(self.room.game_clients) - 1, -1, -1):
             if client.colour == self.room.game_clients[index].colour:
                 del self.room.game_clients[index]
@@ -274,6 +277,7 @@ class RoomThread(threading.Thread):
                     self.ping_manager.send_ping()
                     self.ping_manager.check_pings()
             time.sleep(0.0001)
+        print('closed for business!')
 
     def handle_command(self, data, socket_):
         print(data)

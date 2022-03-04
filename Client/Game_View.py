@@ -205,6 +205,7 @@ class GameView(Event_Base.EventBase):
                         self.slots[tuple(alert['coords'])] = alert['drop_team']
                         self.turn = alert['turn']
                         self.turn_text.value = f'{self.turn.upper()}\'s turn!'
+                        print(f'Drop Confirm Alert: {alert}')
                         if not self.winner:
                             self.winner = alert['winner']
                             if self.winner:
