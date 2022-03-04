@@ -120,8 +120,8 @@ class LobbyView(Event_Base.EventBase):
     def ready_button(self):
         if self.everyone_ready:
             import json
-            socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'set_board', 'args': []}))
             self.set_board_info()
+            socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'set_board', 'args': [self.width, self.height, self.win_length]}))
             State.state.window.show_view(Game_View.GameView(self.width, self.height, self.win_length, self.name, self.colour, self.socket))
 
     def owner_update(self):
