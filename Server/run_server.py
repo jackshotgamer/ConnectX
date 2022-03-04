@@ -177,7 +177,8 @@ class RoomThread(threading.Thread):
         print(f'Slot Width: {self.slot_width}, Slot Height: {self.slot_height}')
         if not self.populated_slots or args[3]:
             self.populate_slots()
-            self.populated_slots = True
+            if not args[3]:
+                self.populated_slots = True
         socket_util.send_str(socket_, json.dumps(data))
         for client in self.game_clients:
             socket_util.send_str(client.sockt_, json.dumps({'type': 'board_update', 'args': (self.slot_width, self.slot_height, self.win_length)}))
