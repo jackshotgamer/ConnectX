@@ -175,7 +175,7 @@ class RoomThread(threading.Thread):
         print(f'Args: {args}')
         self.slot_width, self.slot_height, self.win_length = args[0], args[1], args[2]
         print(f'Slot Width: {self.slot_width}, Slot Height: {self.slot_height}')
-        if not self.populated_slots:
+        if not self.populated_slots or args[3]:
             self.populate_slots()
             self.populated_slots = True
         socket_util.send_str(socket_, json.dumps(data))

@@ -57,7 +57,7 @@ class LobbyView(Event_Base.EventBase):
         string = {
             'type': 'command',
             'command': 'set_board',
-            'args': (self.width, self.height, self.win_length)
+            'args': (self.width, self.height, self.win_length, True)
         }
         socket_util.send_str(self.socket, json.dumps(string))
 
@@ -121,7 +121,7 @@ class LobbyView(Event_Base.EventBase):
         if self.everyone_ready:
             import json
             self.set_board_info()
-            socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'set_board', 'args': [self.width, self.height, self.win_length]}))
+            socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'set_board', 'args': [self.width, self.height, self.win_length, False]}))
             State.state.window.show_view(Game_View.GameView(self.width, self.height, self.win_length, self.name, self.colour, self.socket))
 
     def owner_update(self):
