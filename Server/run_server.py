@@ -188,7 +188,11 @@ class RoomThread(threading.Thread):
         # TODO
         # do ready command
         # \/ being for if owner presses ready
-        socket_util.send_str(socket_, json.dumps({'type': 'set_turn', 'turn': self.current_turn}))
+        for client in self.game_clients:
+            socket_util.send_str(client.sockt_, json.dumps({'type': 'start', 'args': []}))
+        time.sleep(0.001)
+        for client in self.game_clients:
+            socket_util.send_str(client.sockt_, json.dumps({'type': 'set_turn', 'turn': self.current_turn}))
 
     @_command('drop')
     def cmd_drop(self, data, socket_: s.socket, args):
