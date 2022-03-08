@@ -84,7 +84,6 @@ class LobbyView(Event_Base.EventBase):
             win_length = self.button_manager.inputs['win_length'].text.value
         print(f'Things: {input_x, input_y, win_length}')
         print(input_x)
-        # TODO
         try:
             input_x = int(input_x) if input_x else 7
             input_y = int(input_y) if input_y else 6
@@ -92,7 +91,6 @@ class LobbyView(Event_Base.EventBase):
         except ValueError:
             import traceback
             traceback.print_exc()
-            # FIXME
             print('ValueError')
             input_x = 7
             input_y = 6
