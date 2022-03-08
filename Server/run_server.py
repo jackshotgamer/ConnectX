@@ -183,9 +183,12 @@ class RoomThread(threading.Thread):
         for client in self.game_clients:
             socket_util.send_str(client.sockt_, json.dumps({'type': 'board_update', 'args': (self.slot_width, self.slot_height, self.win_length)}))
 
-    @_command('ready')
+    @_command('start')
     def cmd_ready(self, data, socket_: s.socket, args):
-        pass
+        # TODO
+        # do ready command
+        # \/ being for if owner presses ready
+        socket_util.send_str(socket_, json.dumps({'type': 'set_turn', 'turn': self.current_turn}))
 
     @_command('drop')
     def cmd_drop(self, data, socket_: s.socket, args):
@@ -226,6 +229,7 @@ class RoomThread(threading.Thread):
     @_command('join')
     def cmd_join(self, data, socket_: s.socket, args):
         import json
+        name = args[0]
         colour = args[1]
         if not self.first_join:
             self.current_turn = colour
@@ -246,8 +250,8 @@ class RoomThread(threading.Thread):
                 return
         self.game_client_from_socket(socket_).colour = colour
         print(args)
-        socket_util.send_str(socket_, json.dumps(data))
-        socket_util.send_str(socket_, json.dumps({'type': 'set_turn', 'turn': self.current_turn}))
+        for client in self.game_clients:
+            socket_util.send_str(client.sockt_, json.dumps({'type': 'join', 'args': [name, colour]}))
 
     def game_client_from_socket(self, socket_: s.socket) -> Optional[GameClient]:
         for client in self.game_clients:

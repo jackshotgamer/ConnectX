@@ -28,7 +28,7 @@ class GameView(Event_Base.EventBase):
         self.show_win_screen = True
         self.button_manager.append_button('mag_glass', '', lambda: Vector.Vector(State.state.screen_center.x - 250, State.state.window.height - 50), Vector.Vector(100, 100),
                                           Sprites_.mag_glass_dark, Sprites_.mag_glass_dark, Sprites_.mag_glass_light, 200, self.toggle_mag_glass, visible=False)
-        self.button_manager.append_button('leave_button', 'Leave', lambda: Vector.Vector(State.state.screen_center.x + 250, State.state.window.height - 50), Vector.Vector(100, 100),
+        self.button_manager.append_button('leave_button', 'Leave', lambda: Vector.Vector(State.state.screen_center.x + 250, State.state.window.height - 50), Vector.Vector(100, 50),
                                           on_click=self.leave)
         self.username_text = arcade.Text(f'Name: {self.name}', State.state.screen_center.x, State.state.window.height - 20, arcade.color.BLACK, 18, anchor_x='center', anchor_y='center',
                                          multiline=False)

@@ -17,8 +17,6 @@ class LobbyView(Event_Base.EventBase):
         self.socket = socket
         self.is_owner = False
         self.players = {}
-        self.ready_players = set()
-        self.everyone_ready = True
         self.name = name
         self.colour = colour
         self.width = None
@@ -27,7 +25,7 @@ class LobbyView(Event_Base.EventBase):
         self.width_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
         self.height_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
         self.win_length_text = arcade.Text('', 0, 0, anchor_x='center', anchor_y='center')
-        self.button_manager.append_button('Ready', 'Ready', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 200), Vector.Vector(100, 50), on_click=self.ready_button)
+        self.button_manager.append_button('Start', 'Start', lambda: Vector.Vector(State.state.screen_center.x, State.state.screen_center.y - 200), Vector.Vector(100, 50), on_click=self.start_button)
         self.button_manager.append_input('input_x', 'Width:', lambda: Vector.Vector(State.state.screen_center.x - 56, State.state.screen_center.y + 152 + 50), Vector.Vector(110, 50),
                                          text_length=2, visible=False)
         self.button_manager.append_input('input_y', 'Height:', lambda: Vector.Vector(State.state.screen_center.x + 56, State.state.screen_center.y + 152 + 50), Vector.Vector(110, 50),
@@ -115,12 +113,11 @@ class LobbyView(Event_Base.EventBase):
         self.win_length = board_info1[2]
         print(f'Board info2: {board_info1}')
 
-    def ready_button(self):
-        if self.everyone_ready:
-            import json
-            self.set_board_info()
-            socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'set_board', 'args': [self.width, self.height, self.win_length, False]}))
-            State.state.window.show_view(Game_View.GameView(self.width, self.height, self.win_length, self.name, self.colour, self.socket))
+    def start_button(self):
+        import json
+        self.set_board_info()
+        socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'set_board', 'args': [self.width, self.height, self.win_length, False]}))
+        State.state.window.show_view(Game_View.GameView(self.width, self.height, self.win_length, self.name, self.colour, self.socket))
 
     def owner_update(self):
         if self.is_owner:
@@ -156,12 +153,10 @@ class LobbyView(Event_Base.EventBase):
                     alert = json.loads(alert1)
                     if alert['type'] == 'ping':
                         socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'pong', 'args': [self.colour, 'typong?']}))
-                    if alert['type'] == 'ready':
-                        pass
                     if alert['type'] == 'start':
-                        pass
+                        print(alert)
                     if alert['type'] == 'join':
-                        pass
+                        print(alert)
                     if alert['type'] == 'leave':
                         print(alert)
                     if alert['type'] == 'board_update':
