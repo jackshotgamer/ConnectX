@@ -47,6 +47,7 @@ class LobbyView(Event_Base.EventBase):
 
     def toggle_owner(self):
         self.is_owner = not self.is_owner
+        self.button_manager.buttons['Start'].enabled = self.is_owner
         self.owner_update()
 
     def confirm_button(self):
@@ -159,6 +160,8 @@ class LobbyView(Event_Base.EventBase):
                         self.start_button(force=False)
                         print(alert)
                     if alert['type'] == 'join':
+                        print(alert)
+                    if alert['type'] == 'set_owner':
                         print(alert)
                     if alert['type'] == 'leave':
                         print(alert)

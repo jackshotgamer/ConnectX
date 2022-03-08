@@ -255,7 +255,10 @@ class RoomThread(threading.Thread):
         self.game_client_from_socket(socket_).colour = colour
         print(args)
         for client in self.game_clients:
-            socket_util.send_str(client.sockt_, json.dumps({'type': 'join', 'args': [name, colour]}))
+            socket_util.send_str(client.sockt_, json.dumps({'type': 'join', 'args': [name, colour, [self.slot_width, self.slot_height, self.win_length]]}))
+        time.sleep(0.001)
+        for client in self.game_clients:
+            socket_util.send_str(client.sockt_, json.dumps({'type': 'set_owner', 'args': [self.current_turn]}))
 
     def game_client_from_socket(self, socket_: s.socket) -> Optional[GameClient]:
         for client in self.game_clients:
