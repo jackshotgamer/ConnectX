@@ -162,8 +162,10 @@ class LobbyView(Event_Base.EventBase):
                     if alert['type'] == 'join':
                         print(alert)
                     if alert['type'] == 'set_owner':
+                        temp = self.is_owner
                         self.is_owner = self.colour == alert['args'][0]
-                        self.owner_update()
+                        if temp != self.is_owner:
+                            self.toggle_owner()
                     if alert['type'] == 'leave':
                         print(alert)
                     if alert['type'] == 'board_update':
