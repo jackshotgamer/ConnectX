@@ -157,6 +157,8 @@ class LobbyView(Event_Base.EventBase):
                     if alert['type'] == 'ping':
                         socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'pong', 'args': [self.colour, 'typong?']}))
                     if alert['type'] == 'start':
+                        # TODO
+                        # Not working, board update is working though!
                         self.start_button(force=False)
                         print(alert)
                     if alert['type'] == 'join':
