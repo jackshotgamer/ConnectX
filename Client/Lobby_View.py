@@ -159,6 +159,7 @@ class LobbyView(Event_Base.EventBase):
                     if alert['type'] == 'start':
                         # TODO
                         # Not working, board update is working though!
+                        print(f'Start: {alert}')
                         self.start_button(force=False)
                         print(alert)
                     if alert['type'] == 'join':
