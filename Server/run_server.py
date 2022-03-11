@@ -82,12 +82,12 @@ class PingManager:
     def remove_stuff(self, client):
         for connection_ in socket_util.get_writeable_sockets(self.room.sockets):
             string = {
-                'type': 'command',
-                'command': 'leave',
+                'type': 'leave',
                 'args': [f'{client.colour}'],
             }
             try:
                 socket_util.send_str(connection_, json.dumps(string))
+                print(f'Sent leave alert: {string}')
             except BrokenPipeError:
                 pass
         for index in range(len(self.room.game_clients) - 1, -1, -1):
@@ -98,6 +98,10 @@ class PingManager:
                 if not self.room.turn_order:
                     self.room.game_over = True
                     return
+                self.room.current_turn = self.room.turn_order[0]
+                time.sleep(0.001)
+                for client in self.room.game_clients:
+                    socket_util.send_str(client.sockt_, json.dumps({'type': 'set_turn', 'turn': self.room.current_turn}))
                 return
 
 
