@@ -93,7 +93,8 @@ class PingManager:
         for index in range(len(self.room.game_clients) - 1, -1, -1):
             if client.colour == self.room.game_clients[index].colour:
                 del self.room.game_clients[index]
-                self.room.turn_order.remove(client.colour)
+                if client.colour in self.room.turn_order:
+                    self.room.turn_order.remove(client.colour)
                 if not self.room.turn_order:
                     self.room.game_over = True
                     return
@@ -142,6 +143,7 @@ class RoomThread(threading.Thread):
         self.turn_order = []
         self.slots = {}
         self._commands = {}
+        self.started = False
         self.game_over = False
         self.ping_manager = PingManager(self)
         import inspect
@@ -193,6 +195,7 @@ class RoomThread(threading.Thread):
         time.sleep(0.001)
         for client in self.game_clients:
             socket_util.send_str(client.sockt_, json.dumps({'type': 'set_turn', 'turn': self.current_turn}))
+        self.started = True
 
     @_command('drop')
     def cmd_drop(self, data, socket_: s.socket, args):
@@ -238,12 +241,13 @@ class RoomThread(threading.Thread):
         if not self.first_join:
             self.current_turn = colour
             self.first_join = True
-        self.turn_order.append(colour)
-        """
-        current:red
-        
-        [client:red client:orange] <- 0, 1, 0, 1
-        """
+        if self.started:
+            error = {
+                'error': 'GameStarted',
+                'GameStarted': True
+            }
+            socket_util.send_str(socket_, json.dumps(error))
+            return
         for client in self.game_clients:
             if client.colour == colour:
                 error = {
@@ -252,6 +256,7 @@ class RoomThread(threading.Thread):
                 }
                 socket_util.send_str(socket_, json.dumps(error))
                 return
+        self.turn_order.append(colour)
         self.game_client_from_socket(socket_).colour = colour
         print(args)
         for client in self.game_clients:

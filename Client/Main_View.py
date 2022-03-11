@@ -183,6 +183,9 @@ class MainMenu(Event_Base.EventBase):
                     self.button_manager.apply_state(colour, self.button_manager.action_enabled, False)
                     self.disabled_buttons.append(colour)
                     success = False
+        elif read.get('error') == 'GameStarted':
+            self.started = True
+            success = False
         return success
 
     @staticmethod
