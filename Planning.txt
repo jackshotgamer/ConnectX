@@ -1,3 +1,0 @@
-Pinging for checking if clients leave (removes if not there) (Updates player list) (if in game, ends game)
-Player list in Lobby View
-Player list in Game_View
