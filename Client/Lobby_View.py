@@ -168,12 +168,17 @@ class LobbyView(Event_Base.EventBase):
                     if alert['type'] == 'join':
                         print(f'Join: {alert}')
                         if alert['args'][2][0]:
+                            self.width_text.value = f"Width: {str(alert['args'][2][0])}"
                             self.width = alert['args'][2][0]
                         if alert['args'][2][1]:
+                            self.height_text.value = f"Height: {str(alert['args'][2][1])}"
                             self.height = alert['args'][2][1]
                         if alert['args'][2][2]:
+                            self.win_length_text.value = f"Win Length: {str(alert['args'][2][2])}"
                             self.win_length = alert['args'][2][2]
-                        print(f'Width: {self.width}, Height: {self.height}, WL: {self.win_length}')
+                        print(f'Stuff1: {self.width, self.height, self.win_length}')
+                        self.set_board_info()
+                        self.owner_update()
                         self.set_board_info()
                     if alert['type'] == 'set_owner':
                         self.is_owner = self.colour == alert['args'][0]
