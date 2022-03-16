@@ -28,7 +28,12 @@ def get_writeable_sockets(sockets_: Collection[socket.socket]):
 
 
 def send(socket_: socket.socket, bytes_: bytes):
-    return socket_.sendall(bytes_ + bytes('|||', 'utf8'))
+    try:
+        return socket_.sendall(bytes_ + bytes('|||', 'utf8')), True
+    except Exception as e:
+        import traceback
+        print(f'ERROR ERROR: {traceback.format_exc()}')
+        return -1, False
 
 
 def send_str(socket_: socket.socket, data: str):
