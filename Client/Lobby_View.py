@@ -166,12 +166,13 @@ class LobbyView(Event_Base.EventBase):
                         self.start_button(force=False)
                         print(alert)
                     if alert['type'] == 'join':
-                        if alert['args'][2]:
-                            self.width = alert['args'][2]
-                        if alert['args'][3]:
-                            self.height = alert['args'][3]
-                        if alert['args'][4]:
-                            self.win_length = alert['args'][4]
+                        if alert['args'][2][0]:
+                            self.width = alert['args'][2][0]
+                        if alert['args'][2][1]:
+                            self.height = alert['args'][2][1]
+                        if alert['args'][2][2]:
+                            self.win_length = alert['args'][2][2]
+                        self.set_board_info()
                     if alert['type'] == 'set_owner':
                         self.is_owner = self.colour == alert['args'][0]
                         self.owner_update()
