@@ -166,6 +166,7 @@ class LobbyView(Event_Base.EventBase):
                         self.start_button(force=False)
                         print(alert)
                     if alert['type'] == 'join':
+                        print(f'Join: {alert}')
                         if alert['args'][2][0]:
                             self.width = alert['args'][2][0]
                         if alert['args'][2][1]:
