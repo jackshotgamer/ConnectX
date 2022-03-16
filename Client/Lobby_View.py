@@ -173,6 +173,7 @@ class LobbyView(Event_Base.EventBase):
                             self.height = alert['args'][2][1]
                         if alert['args'][2][2]:
                             self.win_length = alert['args'][2][2]
+                        print(f'Width: {self.width}, Height: {self.height}, WL: {self.win_length}')
                         self.set_board_info()
                     if alert['type'] == 'set_owner':
                         self.is_owner = self.colour == alert['args'][0]
