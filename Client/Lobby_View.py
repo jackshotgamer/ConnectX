@@ -150,7 +150,8 @@ class LobbyView(Event_Base.EventBase):
         super().update(delta_time)
         self.elapsed_delta += delta_time
         if self.elapsed_delta > self.socket_interval:
-            print(f'Readable Sockets:{socket_util.get_readable_sockets([self.socket])}')
+            if socket_util.get_readable_sockets([self.socket]):
+                print(f'Readable Sockets:{socket_util.get_readable_sockets([self.socket])}')
             if socket_alerts := socket_util.get_readable_sockets([self.socket]):
                 import json
                 raw = socket_util.read_str(socket_alerts[0])
