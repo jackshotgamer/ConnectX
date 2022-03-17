@@ -155,6 +155,7 @@ class LobbyView(Event_Base.EventBase):
             if socket_alerts := socket_util.get_readable_sockets([self.socket]):
                 import json
                 raw = socket_util.read_str(socket_alerts[0])
+                print(f'The ALERT IS {raw}')
                 for alert1 in raw.split('|||'):
                     if not alert1.strip():
                         continue
@@ -182,6 +183,8 @@ class LobbyView(Event_Base.EventBase):
                         self.set_board_info()
                         self.owner_update()
                         self.set_board_info()
+                        if self.is_owner:
+                            socket_util.send_str(self.socket, json.dumps({'type': 'command', 'command': 'receive', 'args': []}))
                     if alert['type'] == 'set_owner':
                         self.is_owner = self.colour == alert['args'][0]
                         self.owner_update()

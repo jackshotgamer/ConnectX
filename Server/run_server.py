@@ -263,7 +263,7 @@ class RoomThread(threading.Thread):
         self.turn_order.append(colour)
         self.game_client_from_socket(socket_).colour = colour
         print(args)
-        time.sleep(4)
+        time.sleep(0.001)
         print(f'Game Clients: {self.game_clients}')
         for client in self.game_clients:
             print(f'Client Join Send: {client.colour}, {client.sockt_}')
