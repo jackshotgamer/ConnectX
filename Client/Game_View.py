@@ -32,7 +32,7 @@ class GameView(Event_Base.EventBase):
                                           on_click=self.leave)
         self.username_text = arcade.Text(f'Name: {self.name}', State.state.screen_center.x, State.state.window.height - 20, arcade.color.BLACK, 18, anchor_x='center', anchor_y='center',
                                          multiline=False)
-        self.winner_text1 = arcade.Text(f'Winner:', State.state.screen_center.x, State.state.screen_center.y + max(30, (max(State.state.cell_render_size.x, State.state.cell_render_size.y))),
+        self.winner_text1 = arcade.Text(f'Winner:', State.state.screen_center.x, State.state.screen_center.y + max(60, (max(State.state.cell_render_size.x, State.state.cell_render_size.y))),
                                         arcade.color.DARK_BLUE, 50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
         self.winner_text2 = arcade.Text(f'{self.winner.upper()}!', State.state.screen_center.x, State.state.screen_center.y, arcade.color.DARK_BLUE,
                                         50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
@@ -220,7 +220,7 @@ class GameView(Event_Base.EventBase):
             self.elapsed_delta = 0
         hovered = (self.hovered_lane())
         self.username_text.x, self.username_text.y = State.state.screen_center.x, State.state.window.height - 20
-        self.winner_text1.x, self.winner_text1.y = State.state.screen_center.x, State.state.screen_center.y + (max(State.state.cell_render_size.x, State.state.cell_render_size.y))
+        self.winner_text1.x, self.winner_text1.y = State.state.screen_center.x, State.state.screen_center.y + max(60, (max(State.state.cell_render_size.x, State.state.cell_render_size.y)))
         self.winner_text2.x, self.winner_text2.y = State.state.screen_center.x, State.state.screen_center.y
         self.turn_text.x, self.turn_text.y = State.state.screen_center.x, State.state.window.height - 60
         hovered_colours = [(x, y) for (x, y), team in self.slots.items() if x == hovered.x and team == neutral_colour]
