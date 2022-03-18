@@ -32,7 +32,7 @@ class GameView(Event_Base.EventBase):
                                           on_click=self.leave)
         self.username_text = arcade.Text(f'Name: {self.name}', State.state.screen_center.x, State.state.window.height - 20, arcade.color.BLACK, 18, anchor_x='center', anchor_y='center',
                                          multiline=False)
-        self.winner_text1 = arcade.Text(f'Winner:', State.state.screen_center.x, State.state.screen_center.y + (max(State.state.cell_render_size.x, State.state.cell_render_size.y)),
+        self.winner_text1 = arcade.Text(f'Winner:', State.state.screen_center.x, State.state.screen_center.y + max(30, (max(State.state.cell_render_size.x, State.state.cell_render_size.y))),
                                         arcade.color.DARK_BLUE, 50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
         self.winner_text2 = arcade.Text(f'{self.winner.upper()}!', State.state.screen_center.x, State.state.screen_center.y, arcade.color.DARK_BLUE,
                                         50, bold=True, anchor_x='center', anchor_y='center', multiline=False)
